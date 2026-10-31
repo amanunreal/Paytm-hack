@@ -21,5 +21,6 @@ export const decide = (approvalId, decision) =>
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ decision }),
   })
+export const getResults = () => request('/results')
 export const reset = () => request('/reset', { method: 'POST' })
 export const startCall = (caseId) => request(`/cases/${caseId}/call`, { method: 'POST' })

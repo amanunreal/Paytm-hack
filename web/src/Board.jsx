@@ -97,6 +97,7 @@ export default function Board({ runStarted, setRunStarted }) {
         )}
         <div className="actions">
           {board && <a className="nav-link" href="#/manager">Manager view ({board.headline.needs_approval})</a>}
+          {board && <a className="nav-link" href="#/results">Results</a>}
           <button type="button" className="primary" disabled={!board || busy || running || !statuses.has('new')} onClick={run}>
             {running ? 'Running…' : 'Run agent'}
           </button>

@@ -212,7 +212,7 @@ State is `todo`, `doing` or `done`. Keep each task on its own line.
 | T8 | Bolna agent with Sarvam voice: one Hindi call rings a phone | A2 | done |
 | T9 | `wapsi/voice.py`: real call, poll transcript, finish the case | A2 | done |
 | T10 | Phone mockup and manager approval view | A2 | done |
-| T11 | Results page showing the simulated label and assumptions | A2 | doing |
+| T11 | Results page showing the simulated label and assumptions | A2 | done |
 | T12 | Record the demo video | A2 | todo |
 
 ## Decisions

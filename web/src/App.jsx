@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import Board from './Board'
 import CaseDetail from './CaseDetail'
 import Manager from './Manager'
+import Results from './Results'
 
 function useHash() {
   const [hash, setHash] = useState(window.location.hash)
@@ -22,6 +23,7 @@ export default function App() {
   let screen = <Board runStarted={runStarted} setRunStarted={setRunStarted} />
   if (caseId) screen = <CaseDetail key={caseId} caseId={caseId} runStarted={runStarted} />
   if (hash === '#/manager') screen = <Manager />
+  if (hash === '#/results') screen = <Results />
 
   return <div className="page">{screen}</div>
 }
