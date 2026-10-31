@@ -223,6 +223,7 @@ State is `todo`, `doing` or `done`. Keep each task on its own line.
 | T16 | Two-person demo script for A1 and A2 | A1 | done |
 | T17 | README for the submission | A1 | done |
 | T18 | Hosted demo for the submission form, safe for public visitors | A1 | doing |
+| T19 | Clean the repo before it goes public | A1 | doing |
 
 ## Decisions
 
