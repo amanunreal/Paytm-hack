@@ -119,6 +119,13 @@ class BolnaCallTest(unittest.TestCase):
         self.assertEqual(len(self.calls), voice.MAX_CALLS)
         self.assertEqual((case["status"], case["bucket"]), ("done", "rep_visit"))
 
+    def test_the_agent_queueing_a_call_does_not_use_up_a_try(self):
+        with store.connect() as conn:
+            store.add_event(conn, CASE, "call", "Calling merchant", {"goal": "Guide a restart"})
+        for attempt in range(voice.MAX_CALLS - 1):
+            case = self.call_with(execution("busy", transcript=None))
+        self.assertEqual(case["status"], "awaiting_call")
+
     def test_bolna_refusing_the_call_offers_another_and_says_why(self):
         self.call_status = 400
         case = self.call_with()

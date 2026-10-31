@@ -21,7 +21,8 @@ BOLNA_URL = "https://api.bolna.ai"
 POLL_SECONDS = 2
 POLL_LIMIT_SECONDS = 300
 MAX_CALLS = 3
-CALLING = "Calling merchant"
+# Not the agent's "Calling merchant", which only queues a call and must not use up a try.
+CALLING = "Dialling merchant"
 
 # call-disconnected is not here: transcript and outcome are not final until completed.
 TERMINAL = {"completed", "no-answer", "busy", "canceled", "failed", "stopped", "error", "balance-low"}
