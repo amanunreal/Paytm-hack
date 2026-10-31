@@ -165,7 +165,7 @@ State is `todo`, `doing` or `done`. Keep each task on its own line.
 | ID | Task | Owner | State |
 |---|---|---|---|
 | T1 | Simulator, detector, API contract with stub agent | A1 | done |
-| T2 | Real agent loop with read-only tools, working on one case | A1 | todo |
+| T2 | Real agent loop with read-only tools, working on one case | A1 | doing |
 | T3 | Action tools and guardrails, including the waiver block | A1 | todo |
 | T4 | Real agent gets all 37 causes right, stub deleted, `agent_mode` set to `live` | A1 | todo |
 | T5 | Deck fixes and final presentation | A1 | todo |
