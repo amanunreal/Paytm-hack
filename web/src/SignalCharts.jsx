@@ -31,8 +31,8 @@ export default function SignalCharts({ signals }) {
   const day = signals.find((item) => item.day === hovered) ?? signals.at(-1)
 
   return (
-    <section className="panel" aria-labelledby="signals-title">
-      <div className="panel-title">
+    <section aria-labelledby="signals-title">
+      <div className="section-head">
         <h2 id="signals-title">Last {signals.length} days</h2>
         <p className="muted readout">
           {shortDay(day.day)}: {day.txn_count} QR payments, Rs {day.gmv.toLocaleString('en-IN')},{' '}

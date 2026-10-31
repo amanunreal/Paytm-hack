@@ -56,6 +56,12 @@ export const approvalTitle = ({ kind, amount }) =>
 // The API stores a rejection as `rejectd`, so match it either way.
 export const approvalStatus = (status) => (status.startsWith('reject') ? 'rejected' : status)
 
+// Guardrail text is written for the agent, so reword its first sentence for a person.
+export function guardrailLine(event) {
+  const firstSentence = event.detail?.text?.split('. ')[0] ?? event.title
+  return firstSentence.replace('your', "the agent's")
+}
+
 export const percent = (ratio) => `${Math.round(ratio * 100)}%`
 
 export const shortDay = (iso) =>

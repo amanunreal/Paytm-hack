@@ -1,16 +1,18 @@
 import { useState } from 'react'
 import * as api from './api'
 import { CAUSES, LANGUAGES, longDate, percent, stateOf } from './labels'
-import { usePoll } from './usePoll'
 
-const HEADLINE = [
-  ['flagged', 'Flagged'],
-  ['handled_remote', 'Handled remotely'],
-  ['rep_visit', 'Rep visit'],
-  ['needs_approval', 'Needs approval'],
-  ['no_action', 'No action'],
-  ['awaiting_call', 'Awaiting call'],
+const STATS = [
+  ['handled_remote', 'Handled remotely', 'good'],
+  ['rep_visit', 'Rep visit', 'rep'],
+  ['needs_approval', 'Needs approval', 'wait'],
+  ['awaiting_call', 'Awaiting call', 'wait'],
+  ['no_action', 'No action', 'quiet'],
 ]
+
+const NEEDS_YOU = ['awaiting_call', 'on_call', 'awaiting_approval']
+
+const place = (item) => `${item.area}, ${item.state} · ${LANGUAGES[item.language] ?? item.language}`
 
 // Undiagnosed first, so the work still to do stays at the top during a run.
 function groupByCause(cases) {
@@ -20,39 +22,105 @@ function groupByCause(cases) {
     .filter((group) => group.cases.length > 0)
 }
 
-function CaseRow({ item, callDisabled, onCall }) {
-  const { label, tone } = stateOf(item)
+function tally(cases) {
+  const counts = new Map()
+  cases.forEach((item) => {
+    const { label } = stateOf(item)
+    counts.set(label, (counts.get(label) ?? 0) + 1)
+  })
+  return [...counts].map(([label, count]) => `${count} ${label.toLowerCase()}`).join(' · ')
+}
+
+function Progress({ headline }) {
   return (
-    <tr className={`row-${tone}`}>
-      <td>
-        <a className="owner" href={`#/cases/${item.id}`}>{item.owner}</a>
-        <div className="muted">{item.merchant_id} · {item.shop_type}</div>
-      </td>
-      <td>
-        <div>{item.area}</div>
-        <div className="muted">{item.state}</div>
-      </td>
-      <td>{LANGUAGES[item.language] ?? item.language}</td>
-      <td className="number">{percent(item.volume_ratio)}</td>
-      <td className="number">{item.offline_days > 0 ? `${item.offline_days}d` : '–'}</td>
-      <td><span className={`pill pill-${tone}`}>{label}</span></td>
-      <td className="summary">{item.summary ?? ''}</td>
-      <td>
-        {item.status === 'awaiting_call' && (
-          <button type="button" className="primary" disabled={callDisabled} onClick={() => onCall(item.id)}>
-            Call
-          </button>
-        )}
-        {item.status === 'awaiting_approval' && <a className="row-link" href="#/manager">Review</a>}
-      </td>
-    </tr>
+    <section className="progress" aria-label="Where the flagged merchants stand">
+      <div className="meter" aria-hidden="true">
+        {STATS.map(([key, , tone]) => headline[key] > 0 && (
+          <div key={key} className={`meter-part meter-${tone}`} style={{ flexGrow: headline[key] }} />
+        ))}
+      </div>
+      <dl className="stats">
+        {STATS.map(([key, label]) => (
+          <div key={key}>
+            <dd>{headline[key]}</dd>
+            <dt>{label}</dt>
+          </div>
+        ))}
+      </dl>
+    </section>
   )
 }
 
-export default function Board({ runStarted, setRunStarted }) {
-  const { data: board, error, refresh } = usePoll(api.getBoard)
+function NeedsYouRow({ item, busy, onCall }) {
+  const { label, tone } = stateOf(item)
+  return (
+    <li className={`todo todo-${tone}`}>
+      <a href={`#/cases/${item.id}`}>
+        <strong>{item.owner}</strong>
+        <span className="muted">{place(item)}</span>
+      </a>
+      <span className="muted todo-cause">{CAUSES[item.cause]}</span>
+      {item.status === 'awaiting_call' && (
+        <button type="button" className="primary" disabled={busy} onClick={() => onCall(item.id)}>Call</button>
+      )}
+      {item.status === 'awaiting_approval' && <a className="button" href="#/manager">Review</a>}
+      {item.status === 'on_call' && <span className="state state-live">On the line</span>}
+      {item.status === 'done' && <span className={`state state-${tone}`}>{label}</span>}
+    </li>
+  )
+}
+
+function CaseRow({ item }) {
+  const { label, tone } = stateOf(item)
+  return (
+    <li>
+      <a className="case-row" href={`#/cases/${item.id}`}>
+        <span>
+          <strong>{item.owner}</strong>
+          <span className="muted">{item.shop_type}</span>
+        </span>
+        <span className="muted">{place(item)}</span>
+        <span className="muted case-signal">
+          {percent(item.volume_ratio)} volume{item.offline_days > 0 && ` · box offline ${item.offline_days}d`}
+        </span>
+        <span className={`state state-${tone}`}>{label}</span>
+      </a>
+    </li>
+  )
+}
+
+function CauseGroup({ group, open, onToggle }) {
+  const id = `group-${group.cause ?? 'new'}`
+  return (
+    <section className="group">
+      <h3>
+        <button type="button" className="group-head" aria-expanded={open} aria-controls={id} onClick={onToggle}>
+          <span className="chevron" aria-hidden="true">›</span>
+          <span className="group-name">{CAUSES[group.cause] ?? 'Not diagnosed yet'}</span>
+          <span className="group-count">{group.cases.length}</span>
+          <span className="muted group-tally">{tally(group.cases)}</span>
+        </button>
+      </h3>
+      {open && (
+        <ul id={id} className="case-list">
+          {group.cases.map((item) => <CaseRow key={item.id} item={item} />)}
+        </ul>
+      )}
+    </section>
+  )
+}
+
+export default function Board({
+  board, error, refresh, runStarted, setRunStarted, called, setCalled, markCalled, openGroups, setOpenGroups,
+}) {
   const [actionError, setActionError] = useState(null)
   const [busy, setBusy] = useState(false)
+
+  if (!board) {
+    return error
+      ? <p className="alert" role="alert">Cannot reach the API on port 8000.</p>
+      : <p className="muted">Loading the board…</p>
+  }
 
   const act = async (action) => {
     setBusy(true)
@@ -67,10 +135,11 @@ export default function Board({ runStarted, setRunStarted }) {
     }
   }
 
-  const statuses = new Set(board?.cases.map((item) => item.status))
+  const statuses = new Set(board.cases.map((item) => item.status))
   // The run snapshots new cases and keeps writing in the background, so a second
   // run or a reset mid-run would leave a dirty demo. Reloading the page clears this.
   const running = statuses.has('working') || statuses.has('on_call') || (runStarted && statuses.has('new'))
+  const hasNew = statuses.has('new')
 
   const run = () => {
     setRunStarted(true)
@@ -78,96 +147,74 @@ export default function Board({ runStarted, setRunStarted }) {
   }
   const reset = () => {
     setRunStarted(false)
+    setCalled([])
     return act(api.reset)
   }
+  const call = (id) => {
+    markCalled(id)
+    return act(() => api.startCall(id))
+  }
+  const toggle = (key) => {
+    setOpenGroups((open) => (open.includes(key) ? open.filter((item) => item !== key) : [...open, key]))
+  }
+
+  const needsYou = board.cases
+    .filter((item) => NEEDS_YOU.includes(item.status) || called.includes(item.id))
+    .sort((a, b) => a.status.localeCompare(b.status) * -1)
+  const groups = groupByCause(board.cases)
 
   return (
-    <>
-      <header className="topbar">
-        <div className="brand">
-          <h1>Wapsi</h1>
-          <p className="muted">
-            {board ? `All-India board · 8:00 AM, ${longDate(board.date)}` : 'All-India board'}
-          </p>
+    <main>
+      <header className="page-head">
+        <div>
+          <h1>{board.headline.flagged} merchants flagged</h1>
+          <p className="muted">All India · 8:00 AM, {longDate(board.date)}</p>
         </div>
-        {board && (
-          <span className={`badge ${board.agent_mode === 'live' ? 'badge-live' : 'badge-stub'}`}>
-            {board.agent_mode === 'live' ? 'Live agent' : 'Stub agent: canned reasoning'}
-          </span>
-        )}
         <div className="actions">
-          {board && <a className="nav-link" href="#/manager">Manager view ({board.headline.needs_approval})</a>}
-          {board && <a className="nav-link" href="#/results">Results</a>}
-          <button type="button" className="primary" disabled={!board || busy || running || !statuses.has('new')} onClick={run}>
-            {running ? 'Running…' : 'Run agent'}
-          </button>
-          <button type="button" disabled={!board || busy || running} onClick={reset}>Reset</button>
+          {(hasNew || running) && (
+            <button type="button" className="primary" disabled={busy || running} onClick={run}>
+              {running ? 'Working…' : 'Run agent'}
+            </button>
+          )}
+          <button type="button" className="quiet" disabled={busy || running} onClick={reset}>Reset</button>
         </div>
       </header>
 
-      {error && (
-        <p className="alert" role="alert">
-          Cannot reach the API on port 8000.{board ? ' Showing the last board we received.' : ''}
-        </p>
-      )}
+      {error && <p className="alert" role="alert">Cannot reach the API. Showing the last board we received.</p>}
       {actionError && <p className="alert" role="alert">{actionError}</p>}
 
-      {!board && !error && <p className="muted">Loading the board…</p>}
+      <Progress headline={board.headline} />
 
-      {board && (
-        <main>
-          <section className="tiles" aria-label="Headline counts">
-            {HEADLINE.map(([key, label]) => (
-              <div className="tile" key={key}>
-                <div className="tile-value">{board.headline[key]}</div>
-                <div className="muted">{label}</div>
-              </div>
-            ))}
-          </section>
+      {board.area_dips.map((dip) => (
+        <p className="note" key={dip.area}>
+          <strong>{dip.merchants} {dip.area} merchants dipped with their area</strong>
+          {' '}({percent(dip.ratio)} of normal), so Wapsi did nothing.
+        </p>
+      ))}
 
-          {board.area_dips.map((dip) => (
-            <p className="banner" key={dip.area}>
-              <strong>{dip.merchants} {dip.area} merchants dipped with their area</strong>
-              {' '}(area at {percent(dip.ratio)} of normal), so Wapsi did nothing.
-            </p>
-          ))}
-
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th scope="col">Merchant</th>
-                  <th scope="col">Place</th>
-                  <th scope="col">Language</th>
-                  <th scope="col" className="number">Volume vs normal</th>
-                  <th scope="col" className="number">Box offline</th>
-                  <th scope="col">State</th>
-                  <th scope="col">Summary</th>
-                  <th scope="col"><span className="sr-only">Action</span></th>
-                </tr>
-              </thead>
-              {groupByCause(board.cases).map((group) => (
-                <tbody key={group.cause ?? 'undiagnosed'}>
-                  <tr className="group">
-                    <th scope="colgroup" colSpan={8}>
-                      {CAUSES[group.cause] ?? 'Not diagnosed yet'}
-                      <span className="group-count">{group.cases.length}</span>
-                    </th>
-                  </tr>
-                  {group.cases.map((item) => (
-                    <CaseRow
-                      key={item.id}
-                      item={item}
-                      callDisabled={busy}
-                      onCall={(id) => act(() => api.startCall(id))}
-                    />
-                  ))}
-                </tbody>
-              ))}
-            </table>
-          </div>
-        </main>
+      {needsYou.length > 0 && (
+        <section aria-labelledby="needs-you">
+          <h2 id="needs-you">Needs you</h2>
+          <ul className="todos">
+            {needsYou.map((item) => <NeedsYouRow key={item.id} item={item} busy={busy} onCall={call} />)}
+          </ul>
+        </section>
       )}
-    </>
+
+      <section aria-labelledby="by-cause">
+        <h2 id="by-cause">By cause</h2>
+        {groups.map((group) => {
+          const key = group.cause ?? 'new'
+          return (
+            <CauseGroup
+              key={key}
+              group={group}
+              open={openGroups.includes(key) || group.cause === null}
+              onToggle={() => toggle(key)}
+            />
+          )
+        })}
+      </section>
+    </main>
   )
 }

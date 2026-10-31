@@ -36,17 +36,11 @@ function Compare({ title, ai, control, format }) {
 
 export default function Results() {
   const { data: results, error } = usePoll(api.getResults)
-  const back = <a className="back" href="#/">← Board</a>
 
   if (!results) {
-    return (
-      <>
-        {back}
-        {error
-          ? <p className="alert" role="alert">Cannot reach the API on port 8000.</p>
-          : <p className="muted">Loading results…</p>}
-      </>
-    )
+    return error
+      ? <p className="alert" role="alert">Cannot reach the API on port 8000.</p>
+      : <p className="muted">Loading results…</p>
   }
 
   const { ai, control, assumptions } = results
@@ -58,35 +52,33 @@ export default function Results() {
   ]
 
   return (
-    <>
-      {back}
-      <header className="topbar">
-        <div className="brand">
+    <main className="results">
+      <header className="page-head">
+        <div>
           <h1>Results</h1>
           <p className="muted">AI group vs control, {ai.merchants} merchants in each</p>
         </div>
-        <span className="badge badge-stub">Simulated</span>
+        <span className="state state-wait">Simulated</span>
       </header>
 
       {error && <p className="alert" role="alert">Cannot refresh. Showing the last results we received.</p>}
 
-      <p className="banner banner-simulated">
+      <p className="note note-simulated">
         <strong>These outcomes are simulated</strong> from the assumptions on this page. They are not
         measured on real merchants or Paytm data.
       </p>
 
-      <main className="results">
-        <section className="tiles" aria-label="Headline results">
-          {tiles.map(([label, value]) => (
-            <div className="tile" key={label}>
-              <div className="tile-value">{value}</div>
-              <div className="muted">{label}</div>
-            </div>
-          ))}
-        </section>
+      <dl className="stats stats-large">
+        {tiles.map(([label, value]) => (
+          <div key={label}>
+            <dd>{value}</dd>
+            <dt>{label}</dt>
+          </div>
+        ))}
+      </dl>
 
-        <section className="panel" aria-labelledby="compare-title">
-          <div className="panel-title">
+        <section aria-labelledby="compare-title">
+          <div className="section-head">
             <h2 id="compare-title">AI group vs control</h2>
             <div className="legend muted">
               <span><i className="legend-mark series-ai" /> With Wapsi</span>
@@ -121,7 +113,7 @@ export default function Results() {
           </details>
         </section>
 
-        <section className="panel" aria-labelledby="assumptions-title">
+        <section aria-labelledby="assumptions-title">
           <h2 id="assumptions-title">Assumptions</h2>
           <div className="assumptions">
             <table className="compact">
@@ -157,7 +149,6 @@ export default function Results() {
             </dl>
           </div>
         </section>
-      </main>
-    </>
+    </main>
   )
 }
