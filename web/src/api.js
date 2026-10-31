@@ -11,6 +11,8 @@ async function request(path, options) {
 }
 
 export const getBoard = () => request('/board')
+export const getCase = (caseId) => request(`/cases/${caseId}`)
 export const runAll = () => request('/run', { method: 'POST' })
+export const runCase = (caseId) => request(`/cases/${caseId}/run`, { method: 'POST' })
 export const reset = () => request('/reset', { method: 'POST' })
 export const startCall = (caseId) => request(`/cases/${caseId}/call`, { method: 'POST' })
