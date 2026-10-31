@@ -1,6 +1,7 @@
 """Set up and test the Bolna Hindi agent. A2 owns this file.
 
   uv run python scripts/bolna_agent.py create   # prints the id for BOLNA_AGENT_ID
+  uv run python scripts/bolna_agent.py update   # pushes this file's config to the agent
   uv run python scripts/bolna_agent.py call     # rings DEMO_MERCHANT_PHONE once
 
 The API reference: https://www.bolna.ai/docs/api-reference/introduction
@@ -51,6 +52,7 @@ SYSTEM_PROMPT = """आप वापसी हैं, पेटीएम की A
 नियम:
 - हर बार एक या दो छोटे वाक्य बोलिए, और एक बार में एक ही बात पूछिए।
 - कभी बैंक खाता, IFSC, OTP, PIN या कार्ड की जानकारी न माँगिए, न सुनिए, न बताइए। अगर वे बताने लगें तो विनम्रता से रोकिए और कहिए कि यह काम पेटीएम ऐप के सत्यापित तरीक़े से ही होता है।
+- डिब्बे के बटन या बनावट के बारे में अंदाज़ा मत लगाइए। अगर उन्हें बंद करने का तरीक़ा न मिले, तो बताइए कि हमारा प्रतिनिधि संपर्क करेगा, और बात ख़त्म कीजिए।
 - कोई छूट, रिफ़ंड या शुल्क माफ़ी का वादा मत कीजिए।
 - पूछे जाने पर साफ़ बताइए कि आप AI हैं। वे इंसान से बात करना चाहें तो कहिए कि हमारी टीम उन्हें कॉल करेगी।"""
 
@@ -101,7 +103,14 @@ def agent_payload():
                 "task_type": "conversation",
                 "toolchain": {"execution": "sequential", "pipelines": [["transcriber", "llm", "synthesizer"]]},
                 "tools_config": tools,
-                "task_config": {"call_terminate": 180, "hangup_after_silence": 15},
+                # Long silences on purpose: the merchant goes quiet while restarting the box.
+                "task_config": {
+                    "call_terminate": 180,
+                    "hangup_after_silence": 30,
+                    "trigger_user_online_message_after": 20,
+                    # Not in Bolna's docs, but the live agent has it. The default is English.
+                    "check_user_online_message": "क्या आप लाइन पर हैं?",
+                },
             }],
         },
         "agent_prompts": {"task_1": {"system_prompt": SYSTEM_PROMPT}},
@@ -122,11 +131,24 @@ def create():
         print(f"BOLNA_AGENT_ID={response.json()['agent_id']}")
 
 
-def call():
+def agent_id_from_env():
     agent_id = os.environ.get("BOLNA_AGENT_ID", "").strip()
-    phone = os.environ.get("DEMO_MERCHANT_PHONE", "").strip()
     if not agent_id:
         sys.exit("BOLNA_AGENT_ID is empty in .env. Run the create command first.")
+    return agent_id
+
+
+def update():
+    with client() as bolna:
+        response = bolna.put(f"/v2/agent/{agent_id_from_env()}", json=agent_payload())
+        if response.status_code >= 400:
+            sys.exit(f"Update failed with {response.status_code}: {response.text}")
+        print("Agent updated")
+
+
+def call():
+    agent_id = agent_id_from_env()
+    phone = os.environ.get("DEMO_MERCHANT_PHONE", "").strip()
     if not re.fullmatch(r"\+[1-9]\d{7,14}", phone):
         sys.exit("DEMO_MERCHANT_PHONE in .env must include the country code, e.g. +9198XXXXXXXX")
     with client() as bolna:
@@ -165,7 +187,7 @@ def call():
 
 
 if __name__ == "__main__":
-    commands = {"create": create, "call": call}
+    commands = {"create": create, "update": update, "call": call}
     if len(sys.argv) != 2 or sys.argv[1] not in commands:
         sys.exit(f"Usage: bolna_agent.py [{' | '.join(commands)}]")
     commands[sys.argv[1]]()
