@@ -2,6 +2,9 @@
 
 Deck: `deck/Wapsi_Final_Deck.pdf`. Rebuild with `deck/build_deck.swift`.
 
+**Presenting together? Use `deck/DEMO_SCRIPT.md`, the word-for-word script for A1 and A2.**
+This file holds the reasoning and full answers to judge questions.
+
 Check the real time limit first. The 3-minute demo is our plan, not a rule we were given.
 
 ## Before going on stage
