@@ -47,8 +47,8 @@ Wapsi is an AI employee who notices first, finds out why, and fixes it.
 | Time | Do | Say |
 |---|---|---|
 | 0:00 | Show the board | "37 merchants across India flagged this morning. And 25 shops in Guwahati dipped together, so Wapsi left them alone." |
-| 0:20 | Open Karthik, Chennai | "Box offline, payments normal, signal healthy. So: device fault. The call did not fix it, so a rep goes with a replacement, and this brief." |
-| 0:50 | Open Sunita, Almora, click Call | "A real call, in Hindi." Let it play. Stop talking. |
+| 0:20 | Open Sunita, Almora, click Call | "A real call, in Hindi." Let it play. Stop talking. |
+| 1:10 | Open Karthik, Chennai | "Box offline, payments normal, signal healthy. So: device fault. The call did not fix it, so a rep goes with a replacement, and this brief." |
 | 1:40 | Open Anirban, Kolkata | "Rent was charged twice. Wapsi refunded it and told him in Bengali." |
 | 2:05 | Open Selvi, Coimbatore, then the manager view | "Wapsi tried a ₹405 refund. Our code blocked it: the limit is ₹150. So it asked the manager." Approve Balwinder's counter-offer. |
 | 2:35 | Open results | "33 visits become 9, and 15 more merchants come back. These outcomes are simulated from the assumptions shown here." |

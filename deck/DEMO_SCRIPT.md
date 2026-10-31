@@ -65,20 +65,7 @@ merchant problem, so Wapsi did nothing. Knowing when not to act matters too.
 
 ## Part 3: Three problems, three different fixes
 
-### Step 2: Device fault
-
-**Screen: Karthik Nadar, Chennai** *(right arrow)*
-
-**A2:** This is the shopkeeper from our story. His box has been offline for three days, but QR
-payments are at 105% of normal.
-
-**A1:** This is the clever part. Box offline, but payments coming in? The device is broken, not
-the merchant gone. A simple alert can't tell the difference. Wapsi can.
-
-**A2:** It tried a guided restart. That failed, so it booked a rep, with this brief: carry a
-new box, restart already tried. The rep walks in prepared.
-
-### Step 3: Live call
+### Step 2: Live call
 
 **Screen: Sunita Maurya, Almora** *(right arrow)*
 
@@ -103,6 +90,19 @@ this, so it is calling her. This is a real call, in Hindi. Aman will play Sunita
 *Once the case shows **Handled remotely**:*
 
 **A2:** Fixed, with no visit, no human, in the shopkeeper's language. That's 22 handled now.
+
+### Step 3: Device fault
+
+**Screen: Karthik Nadar, Chennai** *(right arrow)*
+
+**A2:** This is the shopkeeper from our story. His box has been offline for three days, but QR
+payments are at 105% of normal.
+
+**A1:** This is the clever part. Box offline, but payments coming in? The device is broken, not
+the merchant gone. A simple alert can't tell the difference. Wapsi can.
+
+**A2:** It tried a guided restart. That failed, so it booked a rep, with this brief: carry a
+new box, restart already tried. The rep walks in prepared.
 
 ### Step 4: Billing fix
 
@@ -192,8 +192,8 @@ clicks and pauses. Rehearse with a stopwatch, because the call is the part most 
 | Version | What to do | Length |
 |---|---|---|
 | **Full** | Everything above | About 7 minutes |
-| **Short** | Cut Step 4, Step 6, A2's reason two, the slide 9 line, A2's "multiply him" paragraph and the rep brief line in Step 2. On Step 5, A1 adds: "and the manager approves it in one tap" | About 5½ minutes |
-| **Shortest** | Keep only A1's story and "So we built Wapsi", the first board paragraph, Step 2's insight, the live call, "12 rupees to protect 3,000", reason three, and "Thank you" | About 3½ minutes |
+| **Short** | Cut Step 4, Step 6, A2's reason two, the slide 9 line, A2's "multiply him" paragraph and the rep brief line in Step 3. On Step 5, A1 adds: "and the manager approves it in one tap" | About 5½ minutes |
+| **Shortest** | Keep only A1's story and "So we built Wapsi", the first board paragraph, the live call, Step 3's insight, "12 rupees to protect 3,000", reason three, and "Thank you" | About 3½ minutes |
 
 Never cut the live call or the line "12 rupees to protect 3,000". If you have a strict 3 minutes,
 use the Shortest version and play the recorded call instead of ringing the phone live.

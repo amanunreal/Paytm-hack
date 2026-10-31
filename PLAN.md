@@ -47,8 +47,8 @@ the real agent and a real phone call.
 | # | What the audience sees | Screen |
 |---|---|---|
 | 1 | 8:00 AM all-India board: 37 flagged across states, sorted by cause. Banner: 25 Guwahati merchants dipped with their area, so Wapsi did nothing | Ops board |
-| 2 | Open device fault case M0044 (Karthik Nadar, kirana, Chennai): box offline, QR still at normal volume, diagnosis, rep brief | Case detail |
-| 3 | Click "Call" on M0418 (Sunita Maurya, tailor, Almora, SIM problem): a real phone rings, Hindi conversation on speaker, the board turns green | Ops board + phone |
+| 2 | Click "Call" on M0418 (Sunita Maurya, tailor, Almora, SIM problem): a real phone rings, Hindi conversation on speaker, the board turns green | Ops board + phone |
+| 3 | Open device fault case M0044 (Karthik Nadar, kirana, Chennai): box offline, QR still at normal volume, diagnosis, rep brief | Case detail |
 | 4 | Billing case M0285 (Anirban Ghosh, Kolkata): rent reversed, WhatsApp confirmation in Bengali appears in the phone mockup | Case detail |
 | 5 | Over-limit waiver blocked by guardrail, then manager approves counter-offer M0393 (Balwinder Gill, Ludhiana) in one tap | Manager view |
 | 6 | AI group vs control: visits saved, cost, Rs recovered. Say out loud that these are simulated | Results |

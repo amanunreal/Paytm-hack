@@ -4,8 +4,8 @@ import { useEffect } from 'react'
 // with ?demo in the URL, so the normal product view stays clean. Arrow keys work too.
 const STEPS = [
   { href: '#/', label: 'Board' },
-  { href: '#/cases/C-M0044', label: 'Device fault' },
   { href: '#/cases/C-M0418', label: 'Live call' },
+  { href: '#/cases/C-M0044', label: 'Device fault' },
   { href: '#/cases/C-M0285', label: 'Billing fix' },
   { href: '#/cases/C-M0235', label: 'Waiver blocked' },
   { href: '#/manager', label: 'Manager' },
