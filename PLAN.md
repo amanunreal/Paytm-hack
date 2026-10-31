@@ -214,6 +214,7 @@ State is `todo`, `doing` or `done`. Keep each task on its own line.
 | T10 | Phone mockup and manager approval view | A2 | done |
 | T11 | Results page showing the simulated label and assumptions | A2 | done |
 | T12 | Record the demo video | A2 | todo |
+| T13 | UI polish: demo path strip, merchant scale on the board, ₹ formatting | A1 | doing |
 
 ## Decisions
 
