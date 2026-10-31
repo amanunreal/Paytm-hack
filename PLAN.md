@@ -183,4 +183,5 @@ State is `todo`, `doing` or `done`. Keep each task on its own line.
 - Voice is Bolna for the call, with Sarvam for Hindi speech. $5 free credit to start.
 - WhatsApp is a phone mockup on the page, labelled simulated if asked.
 - SQLite for today. Slide 6 is the production design.
+- The demo agent runs on Claude Sonnet (`claude-sonnet-5-5`), set by `WAPSI_MODEL`.
 - All-India data: 20 places, 11 languages, compared with their local area.
