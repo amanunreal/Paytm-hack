@@ -219,11 +219,11 @@ State is `todo`, `doing` or `done`. Keep each task on its own line.
 | T12 | Record the demo video | A2 | todo |
 | T13 | UI polish: demo path strip, merchant scale on the board, ₹ formatting | A1 | done |
 | T14 | Use Inter, the font paytm.com loads, bundled with the web app | A1 | done |
-| T15 | Mentor feedback: business case on slide 8, results page and pitch script | A1 | done |
+| T15 | Business case on slide 8, results page and pitch script | A1 | done |
 | T16 | Two-person demo script for A1 and A2 | A1 | done |
 | T17 | README for the submission | A1 | done |
 | T18 | Hosted demo for the submission form, safe for public visitors | A1 | doing |
-| T19 | Clean the repo before it goes public | A1 | doing |
+| T19 | Clean the repo before it goes public | A1 | done |
 
 ## Decisions
 

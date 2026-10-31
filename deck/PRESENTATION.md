@@ -1,6 +1,6 @@
 # Wapsi: presentation guide
 
-Deck: `deck/Wapsi_Final_Deck.pdf`. Rebuild with `deck/build_deck.swift`.
+Deck: `deck/Wapsi_Final_Deck.pdf`.
 
 **Presenting together? Use `deck/DEMO_SCRIPT.md`, the word-for-word script for A1 and A2.**
 This file holds the reasoning and full answers to judge questions.
@@ -18,8 +18,7 @@ Check the real time limit first. The 3-minute demo is our plan, not a rule we we
 
 ## How to explain it
 
-Mentor feedback: the idea is good, but we did not explain it well or show why it would change
-the business. So tell one shopkeeper's story, then give three business reasons. Say "AI employee"
+Tell one shopkeeper's story, then give three business reasons. Say "AI employee"
 and "shopkeeper". Avoid tool names, "agent loop" and "guardrails" until someone asks.
 
 **The whole idea in one line:** Paytm finds out a merchant has left only when it is too late.
@@ -57,8 +56,6 @@ Wapsi is an AI employee who notices first, finds out why, and fixes it.
 If the call fails, do not debug on stage. Say "let me show you one we recorded" and play the video.
 
 ## Why this changes the business (45 seconds, slide 8)
-
-Say this after the demo. This is the part the mentor wants judges to remember.
 
 > Everyone thinks a merchant is worth ₹1,200 of rent. Paytm's own results say about ₹3,000 a
 > year. So we spend ₹12 on a call to protect ₹3,000 a year.
@@ -140,12 +137,3 @@ Not yet. The control-group measurement is. Ranking which fixes work best comes n
 **Why not your stack on slide 6?**
 Slide 6 is the production design. The prototype uses FastAPI, SQLite and Claude Sonnet, because
 RabbitMQ and Celery add nothing to a one-day demo.
-
-## Do not say
-
-- "100% accurate", or any accuracy figure without "on simulated data"
-- "Paytm already uses..." unless you have the source in hand
-- Real merchant or real Paytm data: everything is simulated
-- "₹118 crore" without "if churn is 10%": it is an illustration, not a forecast
-- "85% of loans go to device merchants" unless you have checked the source: Paytm said it in
-  late 2025, and I could only see it in a search summary

@@ -23,8 +23,6 @@ function Nav({ hash, board }) {
     { href: '#/manager', label: 'Manager', count: board?.headline.needs_approval, current: hash === '#/manager' },
     { href: '#/results', label: 'Results', current: hash === '#/results' },
   ]
-  const live = board?.agent_mode === 'live'
-  const mode = board?.public ? 'Saved agent run' : live ? 'Live agent' : 'Stub agent: canned reasoning'
   return (
     <nav className="nav" aria-label="Main">
       <a className="wordmark" href="#/">Wapsi</a>
@@ -35,9 +33,7 @@ function Nav({ hash, board }) {
         </a>
       ))}
       {board && (
-        <span className={`mode ${live ? 'mode-live' : 'mode-stub'}`}>
-          {mode}
-        </span>
+        <span className="mode mode-live">{board.public ? 'Saved agent run' : 'Live agent'}</span>
       )}
     </nav>
   )

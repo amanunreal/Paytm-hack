@@ -50,14 +50,6 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
 
 .muted { color: var(--muted); font-size: 14px; }
 
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
 
 /* Navigation */
 .nav {
@@ -99,7 +91,6 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
   vertical-align: 1px;
 }
 .mode-live { color: #8ae6b0; }
-.mode-stub { padding: 2px 10px; border-radius: 12px; background: var(--amber-tint); color: var(--amber); }
 
 /* Page */
 .public-note { margin: 0; padding: 8px 32px; background: var(--amber-tint); color: var(--amber); font-size: 14px; text-align: center; }
