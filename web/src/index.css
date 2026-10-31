@@ -361,7 +361,8 @@ table.compact { margin-top: 8px; font-size: 14px; }
 .compare-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px 36px; }
 .compare { margin: 0; }
 .compare figcaption { margin-bottom: 6px; font-size: 15px; font-weight: 600; }
-.compare-row { display: grid; grid-template-columns: 74px minmax(0, 1fr) 72px; gap: 8px; align-items: center; padding: 3px 0; }
+.compare-row { display: grid; grid-template-columns: 86px minmax(0, 1fr) 72px; gap: 8px; align-items: center; padding: 3px 0; }
+.compare-row > span:first-child { white-space: nowrap; }
 .compare-track { min-width: 0; }
 .compare-bar { height: 14px; min-width: 4px; border-radius: 0 4px 4px 0; }
 .compare-value { font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
