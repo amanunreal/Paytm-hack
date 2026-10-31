@@ -100,6 +100,12 @@ The app works with no API keys: the board opens from the saved run, and `VOICE_M
 scripted call. For live runs, add `ANTHROPIC_API_KEY` to `.env`. For a real phone call, add the Bolna
 keys and `DEMO_MERCHANT_PHONE`, and set `VOICE_MODE=bolna`.
 
+## Hosted demo
+
+`render.yaml` deploys the whole app as one free Render service. It runs with `WAPSI_PUBLIC=1` and no
+API keys, so visitors see a saved real agent run and a scripted call, and cannot start paid runs or
+real calls. The free tier sleeps when idle, so the first visit can take about a minute.
+
 ## Test it
 
 ```
