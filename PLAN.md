@@ -152,12 +152,35 @@ Keys go in `.env`, which is git-ignored. Never paste keys in chat.
 Work on `main` in small commits. Run `git pull --rebase` before every push, and push
 at least at every checkpoint. No co-author lines in commit messages.
 
-## Status
+## Staying in sync
 
-| Item | Owner | State |
-|---|---|---|
-| Simulator and detector | A1 | Done |
-| API contract with stub agent | A1 | Done |
-| Agent and tools | A1 | Not started |
-| Web app | A2 | Not started |
-| Bolna call | A2 | Not started |
+Talk to each other for decisions. Use this file and git for the record. Before starting
+a task, set it to `doing` and push: that push is what stops both of you doing the same
+work. `CLAUDE.md` gives both Claudes the same rules.
+
+## Tasks
+
+State is `todo`, `doing` or `done`. Keep each task on its own line.
+
+| ID | Task | Owner | State |
+|---|---|---|---|
+| T1 | Simulator, detector, API contract with stub agent | A1 | done |
+| T2 | Real agent loop with read-only tools, working on one case | A1 | todo |
+| T3 | Action tools and guardrails, including the waiver block | A1 | todo |
+| T4 | Real agent gets all 37 causes right, stub deleted, `agent_mode` set to `live` | A1 | todo |
+| T5 | Deck fixes and final presentation | A1 | todo |
+| T6 | Vite + React app showing the ops board from `/api/board` | A2 | todo |
+| T7 | Case detail with live agent trace | A2 | todo |
+| T8 | Bolna agent with Sarvam voice: one Hindi call rings a phone | A2 | todo |
+| T9 | `wapsi/voice.py`: real call, poll transcript, finish the case | A2 | todo |
+| T10 | Phone mockup and manager approval view | A2 | todo |
+| T11 | Results page showing the simulated label and assumptions | A2 | todo |
+| T12 | Record the demo video | A2 | todo |
+
+## Decisions
+
+- Whole demo is in the browser. The call rings a real phone, started from the page.
+- Voice is Bolna for the call, with Sarvam for Hindi speech. $5 free credit to start.
+- WhatsApp is a phone mockup on the page, labelled simulated if asked.
+- SQLite for today. Slide 6 is the production design.
+- All-India data: 20 places, 11 languages, compared with their local area.
