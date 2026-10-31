@@ -115,7 +115,7 @@ export default function CaseDetail({ caseId, runStarted }) {
           )}
           {item.status === 'awaiting_call' && (
             <button type="button" className="primary" disabled={busy} onClick={() => act(() => api.startCall(caseId))}>
-              Call
+              {events.some((event) => event.kind === 'call') ? 'Call again' : 'Call'}
             </button>
           )}
         </div>

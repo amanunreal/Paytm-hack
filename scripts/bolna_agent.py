@@ -2,6 +2,7 @@
 
   uv run python scripts/bolna_agent.py create   # prints the id for BOLNA_AGENT_ID
   uv run python scripts/bolna_agent.py update   # pushes this file's config to the agent
+  uv run python scripts/bolna_agent.py setup-outcome   # post-call fixed / not fixed answer
   uv run python scripts/bolna_agent.py call     # rings DEMO_MERCHANT_PHONE once
 
 The API reference: https://www.bolna.ai/docs/api-reference/introduction
@@ -19,6 +20,9 @@ load_dotenv()
 
 BASE_URL = "https://api.bolna.ai"
 AGENT_NAME = "Wapsi Hindi"
+# Must match wapsi/voice.py, which reads this answer after the call.
+OUTCOME_CATEGORY = "Wapsi"
+OUTCOME_NAME = "Call Outcome"
 POLL_SECONDS = 3
 POLL_LIMIT_SECONDS = 300
 # call-disconnected is not here: cost and transcript are not final until completed.
@@ -51,6 +55,7 @@ SYSTEM_PROMPT = """आप वापसी हैं, पेटीएम की A
 
 नियम:
 - हर बार एक या दो छोटे वाक्य बोलिए, और एक बार में एक ही बात पूछिए।
+- अगर वे अभी बात न कर सकें या बाद में कॉल करने को कहें, तो कहिए कि हम दोबारा कॉल करेंगे, और बात ख़त्म कीजिए।
 - कभी बैंक खाता, IFSC, OTP, PIN या कार्ड की जानकारी न माँगिए, न सुनिए, न बताइए। अगर वे बताने लगें तो विनम्रता से रोकिए और कहिए कि यह काम पेटीएम ऐप के सत्यापित तरीक़े से ही होता है।
 - डिब्बे के बटन या बनावट के बारे में अंदाज़ा मत लगाइए। अगर उन्हें बंद करने का तरीक़ा न मिले, तो बताइए कि हमारा प्रतिनिधि संपर्क करेगा, और बात ख़त्म कीजिए।
 - कोई छूट, रिफ़ंड या शुल्क माफ़ी का वादा मत कीजिए।
@@ -131,6 +136,45 @@ def create():
         print(f"BOLNA_AGENT_ID={response.json()['agent_id']}")
 
 
+def setup_outcome():
+    """Make the post-call extraction that wapsi/voice.py reads to pick the next step."""
+    agent_id = agent_id_from_env()
+    with client() as bolna:
+        response = bolna.get("/dispositions/", params={"agent_id": agent_id})
+        response.raise_for_status()
+        if OUTCOME_NAME in response.text:
+            print("Outcome extraction already exists")
+            return
+        response = bolna.post("/dispositions/", json={
+            "agent_id": agent_id,
+            "name": OUTCOME_NAME,
+            "category": OUTCOME_CATEGORY,
+            "question": (
+                "This is a Hindi support call about a Paytm Soundbox that went offline. Decide whether "
+                "the merchant's box came back. Only trust what the merchant says, not what the agent "
+                "assumes. If the call ended before the merchant confirmed the result, it is not fixed."
+            ),
+            "is_objective": True,
+            "objective_options": [
+                {"value": "fixed", "condition": "The merchant clearly confirms the box is back on or working."},
+                {"value": "not_fixed", "condition": (
+                    "The merchant tried the restart and the box still does not work, or says they "
+                    "cannot do it, or asks for someone to come."
+                )},
+                {"value": "call_back", "condition": (
+                    "The merchant is busy, asks to be called later, or the call stopped before the "
+                    "restart was finished."
+                )},
+                {"value": "NA", "condition": "None of the above is clear from the call."},
+            ],
+            "is_subjective": False,
+            "subjective_type": "text",
+        })
+        if response.status_code >= 400:
+            sys.exit(f"Setup failed with {response.status_code}: {response.text}")
+        print("Outcome extraction created")
+
+
 def agent_id_from_env():
     agent_id = os.environ.get("BOLNA_AGENT_ID", "").strip()
     if not agent_id:
@@ -187,7 +231,7 @@ def call():
 
 
 if __name__ == "__main__":
-    commands = {"create": create, "update": update, "call": call}
+    commands = {"create": create, "update": update, "setup-outcome": setup_outcome, "call": call}
     if len(sys.argv) != 2 or sys.argv[1] not in commands:
         sys.exit(f"Usage: bolna_agent.py [{' | '.join(commands)}]")
     commands[sys.argv[1]]()
