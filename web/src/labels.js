@@ -51,7 +51,7 @@ export const stateOf = (item) => {
 
 // `amount` is a one-off refund for a waiver, but the new monthly rent for a counter-offer.
 export const approvalTitle = ({ kind, amount }) =>
-  kind === 'waiver' ? `Refund of Rs ${amount}` : `Counter-offer: Rs ${amount} monthly rent`
+  kind === 'waiver' ? `Refund of ₹${amount}` : `Counter-offer: ₹${amount} monthly rent`
 
 // The API stores a rejection as `rejectd`, so match it either way.
 export const approvalStatus = (status) => (status.startsWith('reject') ? 'rejected' : status)

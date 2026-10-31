@@ -2,7 +2,7 @@ import * as api from './api'
 import { CAUSES, percent } from './labels'
 import { usePoll } from './usePoll'
 
-const rupees = (amount) => `Rs ${amount.toLocaleString('en-IN')}`
+const rupees = (amount) => `₹${amount.toLocaleString('en-IN')}`
 const signed = (amount) => `+${amount}`
 
 const MEASURES = [
@@ -39,7 +39,7 @@ export default function Results() {
 
   if (!results) {
     return error
-      ? <p className="alert" role="alert">Cannot reach the API on port 8000.</p>
+      ? <p className="alert" role="alert">Cannot reach the API.</p>
       : <p className="muted">Loading results…</p>
   }
 

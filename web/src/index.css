@@ -102,6 +102,33 @@ a:focus-visible, summary:focus-visible, button:focus-visible {
 .mode-stub { padding: 2px 10px; border-radius: 12px; background: var(--amber-tint); color: var(--amber); }
 
 /* Page */
+.demo-path {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 20px;
+  margin: 0;
+  padding: 10px 32px;
+  background: var(--cyan-tint);
+  list-style: none;
+  font-size: 14px;
+}
+.demo-path a { display: flex; align-items: center; gap: 6px; color: var(--muted); text-decoration: none; }
+.demo-path a:hover, .demo-path a[aria-current='step'] { color: var(--navy); }
+.demo-path a[aria-current='step'] { font-weight: 700; }
+.demo-step {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--navy);
+  font-size: 12px;
+  font-weight: 700;
+}
+.demo-path a[aria-current='step'] .demo-step { background: var(--navy); color: #fff; }
+
 .page { max-width: 1120px; margin: 0 auto; padding: 22px 32px 40px; }
 main { display: grid; gap: 22px; }
 

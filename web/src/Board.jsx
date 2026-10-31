@@ -118,7 +118,7 @@ export default function Board({
 
   if (!board) {
     return error
-      ? <p className="alert" role="alert">Cannot reach the API on port 8000.</p>
+      ? <p className="alert" role="alert">Cannot reach the API.</p>
       : <p className="muted">Loading the board…</p>
   }
 
@@ -168,7 +168,9 @@ export default function Board({
       <header className="page-head">
         <div>
           <h1>{board.headline.flagged} merchants flagged</h1>
-          <p className="muted">All India · 8:00 AM, {longDate(board.date)}</p>
+          <p className="muted">
+            All India: {board.watched.merchants} merchants watched in {board.watched.places} places, {board.watched.languages} languages · 8:00 AM, {longDate(board.date)}
+          </p>
         </div>
         <div className="actions">
           {(hasNew || running) && (

@@ -44,6 +44,7 @@ class DemoFlowTest(unittest.TestCase):
             "flagged": 37, "handled_remote": 21, "rep_visit": 9,
             "needs_approval": 2, "no_action": 4, "awaiting_call": 1,
         })
+        self.assertEqual(board["watched"], {"merchants": 500, "places": 20, "languages": 11})
         self.assertEqual(board["area_dips"][0]["area"], "Guwahati")
         self.assertGreater(len({case["state"] for case in board["cases"]}), 8)
 

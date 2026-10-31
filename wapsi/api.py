@@ -44,6 +44,10 @@ def board():
         return {
             "date": sim.TODAY.isoformat(),
             "agent_mode": agent.AGENT_MODE,
+            "watched": dict(conn.execute(
+                "SELECT COUNT(*) AS merchants, COUNT(DISTINCT area) AS places, "
+                "COUNT(DISTINCT language) AS languages FROM merchants"
+            ).fetchone()),
             "headline": {
                 "flagged": len(cases),
                 "handled_remote": buckets["handled_remote"],

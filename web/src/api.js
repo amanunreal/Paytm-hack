@@ -7,7 +7,8 @@ async function request(path, options) {
     const body = await response.json().catch(() => null)
     throw new Error(body?.detail ?? `${path} failed with ${response.status}`)
   }
-  return response.json()
+  // The agent writes Rs in its text. The UI and the deck both show the rupee sign.
+  return JSON.parse((await response.text()).replace(/\bRs\.? ?(?=\d)/g, '₹'))
 }
 
 export const getBoard = () => request('/board')

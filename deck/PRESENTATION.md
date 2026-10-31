@@ -10,6 +10,8 @@ Check the real time limit first. The 3-minute demo is our plan, not a rule we we
 2. Click **Reset**. The board must show 21 handled, 9 visits, 2 approvals, 4 no action, 1 call.
 3. The merchant phone is charged, on speaker, and not on silent.
 4. The demo video is open in a tab, ready as the backup.
+5. Open the app with `?demo` in the URL, like `http://localhost:5173/?demo=1`. A numbered strip
+   gives one click to each demo step, and the left and right arrow keys move between steps.
 
 ## Opening (30 seconds, slides 1 and 2)
 

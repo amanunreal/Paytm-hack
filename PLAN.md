@@ -118,7 +118,7 @@ with a proxy from `/api` to port 8000.
 
 | Method | Path | Purpose |
 |---|---|---|
-| GET | `/api/board` | Headline counts, area dips, AI cohort cases with `state` and `language` |
+| GET | `/api/board` | Headline counts, merchants `watched`, area dips, AI cohort cases with `state` and `language` |
 | GET | `/api/cases/{id}` | Case, merchant, 14 days of signals, events, approvals |
 | GET | `/api/events?after=N` | New events after id N. Poll every second |
 | POST | `/api/run` | Run the agent on every new AI case (background) |
@@ -214,7 +214,7 @@ State is `todo`, `doing` or `done`. Keep each task on its own line.
 | T10 | Phone mockup and manager approval view | A2 | done |
 | T11 | Results page showing the simulated label and assumptions | A2 | done |
 | T12 | Record the demo video | A2 | todo |
-| T13 | UI polish: demo path strip, merchant scale on the board, ₹ formatting | A1 | doing |
+| T13 | UI polish: demo path strip, merchant scale on the board, ₹ formatting | A1 | done |
 
 ## Decisions
 

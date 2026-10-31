@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import * as api from './api'
 import Board from './Board'
 import CaseDetail from './CaseDetail'
+import DemoPath from './DemoPath'
 import Manager from './Manager'
 import Results from './Results'
 import { usePoll } from './usePoll'
@@ -76,6 +77,7 @@ export default function App() {
   return (
     <>
       <Nav hash={hash} board={board} />
+      {new URLSearchParams(window.location.search).has('demo') && <DemoPath hash={hash} />}
       <div className="page">{screen}</div>
     </>
   )
