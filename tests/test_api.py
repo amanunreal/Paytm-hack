@@ -124,6 +124,16 @@ class DemoFlowTest(unittest.TestCase):
         self.assertGreater(results["incremental_won_back"], 0)
         self.assertEqual(results["revenue_kept"], round(14.75 * 3000))
 
+    def test_public_demo_cannot_spend_credit_or_lose_the_saved_run(self):
+        with mock.patch.dict(os.environ, {"WAPSI_PUBLIC": "1"}), mock.patch.object(agent, "run_all") as run_all:
+            self.assertTrue(self.board()["public"])
+            self.assertEqual(self.client.post("/api/run").status_code, 403)
+            self.assertEqual(self.client.post("/api/cases/C-M0044/run").status_code, 403)
+            self.assertEqual(self.client.post("/api/reset?fresh=true").status_code, 403)
+            self.assertEqual(self.client.post("/api/reset").status_code, 200)
+            self.assertEqual(self.board()["headline"]["handled_remote"], 21)
+        run_all.assert_not_called()
+
     def test_unknown_case_is_404(self):
         self.assertEqual(self.client.get("/api/cases/C-NOPE").status_code, 404)
 

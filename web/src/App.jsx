@@ -24,6 +24,7 @@ function Nav({ hash, board }) {
     { href: '#/results', label: 'Results', current: hash === '#/results' },
   ]
   const live = board?.agent_mode === 'live'
+  const mode = board?.public ? 'Saved agent run' : live ? 'Live agent' : 'Stub agent: canned reasoning'
   return (
     <nav className="nav" aria-label="Main">
       <a className="wordmark" href="#/">Wapsi</a>
@@ -35,7 +36,7 @@ function Nav({ hash, board }) {
       ))}
       {board && (
         <span className={`mode ${live ? 'mode-live' : 'mode-stub'}`}>
-          {live ? 'Live agent' : 'Stub agent: canned reasoning'}
+          {mode}
         </span>
       )}
     </nav>
@@ -77,6 +78,11 @@ export default function App() {
   return (
     <>
       <Nav hash={hash} board={board} />
+      {board?.public && (
+        <p className="public-note">
+          Public demo: a saved real agent run on simulated merchants. The call here is scripted. See our video for the live Hindi call.
+        </p>
+      )}
       {new URLSearchParams(window.location.search).has('demo') && <DemoPath hash={hash} />}
       <div className="page">{screen}</div>
     </>

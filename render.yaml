@@ -1,0 +1,20 @@
+# The public demo for the submission form. It needs no API keys, by design:
+# visitors see a saved real agent run and a scripted call, and cannot spend credit.
+services:
+  - type: web
+    name: wapsi-demo
+    runtime: python
+    plan: free
+    buildCommand: pip install uv && uv sync --frozen --no-dev && npm --prefix web ci --include=dev && npm --prefix web run build
+    startCommand: .venv/bin/uvicorn wapsi.api:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/board
+    autoDeployTrigger: commit
+    envVars:
+      - key: WAPSI_PUBLIC
+        value: "1"
+      - key: VOICE_MODE
+        value: mock
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: NODE_VERSION
+        value: 22.12.0

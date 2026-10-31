@@ -130,6 +130,9 @@ with a proxy from `/api` to port 8000.
 | POST | `/api/reset` | Back to the demo's opening board, restored from the saved real agent run. Use between takes |
 | POST | `/api/reset?fresh=true` | Every case back to `new`, for a real agent run with `/api/run` |
 
+`WAPSI_PUBLIC=1` is the hosted mode: `/api/run`, `/api/cases/{id}/run` and fresh resets return 403,
+and calls are always mock.
+
 Live updates are polling, not websockets: it is simpler and cannot die on stage.
 
 **Fixed values** (the UI may rely on these)

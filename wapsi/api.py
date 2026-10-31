@@ -1,19 +1,36 @@
 """The API both of us build against. Contract: PLAN.md. Docs: /docs."""
+import os
 from collections import Counter
 from contextlib import asynccontextmanager
 from datetime import timedelta
+from pathlib import Path
 
 from dotenv import load_dotenv
 from fastapi import BackgroundTasks, FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 load_dotenv()
 
 from wapsi import actions, agent, detector, results, sim, store, voice  # noqa: E402
 
+WEB_BUILD = Path(__file__).resolve().parent.parent / "web" / "dist"
+
+
+def is_public():
+    """On the hosted demo, visitors must not be able to spend API credit or ring a phone."""
+    return os.environ.get("WAPSI_PUBLIC") == "1"
+
+
+def require_private():
+    if is_public():
+        raise HTTPException(403, "Agent runs are off on the public demo. The board shows a saved real run.")
+
 
 @asynccontextmanager
 async def lifespan(_app):
+    if is_public():
+        os.environ["VOICE_MODE"] = "mock"
     store.ensure_db(prerun=True)
     yield
 
@@ -44,6 +61,7 @@ def board():
         return {
             "date": sim.TODAY.isoformat(),
             "agent_mode": agent.AGENT_MODE,
+            "public": is_public(),
             "watched": dict(conn.execute(
                 "SELECT COUNT(*) AS merchants, COUNT(DISTINCT area) AS places, "
                 "COUNT(DISTINCT language) AS languages FROM merchants"
@@ -85,12 +103,14 @@ def events(after: int = 0):
 
 @app.post("/api/run", status_code=202)
 def run(tasks: BackgroundTasks):
+    require_private()
     tasks.add_task(agent.run_all)
     return {"started": True}
 
 
 @app.post("/api/cases/{case_id}/run", status_code=202)
 def run_case(case_id: str, tasks: BackgroundTasks):
+    require_private()
     with store.connect() as conn:
         get_case(conn, case_id)
     tasks.add_task(agent.run_one, case_id)
@@ -132,6 +152,13 @@ def get_results():
 @app.post("/api/reset")
 def reset(fresh: bool = False):
     """Back to the demo's opening board. With fresh, every case is new for a real agent run."""
+    if fresh:
+        require_private()
     with store.connect() as conn:
         store.reset(conn, prerun=not fresh)
     return {"reset": True}
+
+
+# Last, so the API routes win. One server can then host the whole app.
+if WEB_BUILD.exists():
+    app.mount("/", StaticFiles(directory=WEB_BUILD, html=True), name="web")
