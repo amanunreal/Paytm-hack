@@ -215,6 +215,7 @@ State is `todo`, `doing` or `done`. Keep each task on its own line.
 | T11 | Results page showing the simulated label and assumptions | A2 | done |
 | T12 | Record the demo video | A2 | todo |
 | T13 | UI polish: demo path strip, merchant scale on the board, ₹ formatting | A1 | done |
+| T14 | Use Inter, the font paytm.com loads, bundled with the web app | A1 | doing |
 
 ## Decisions
 
