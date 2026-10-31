@@ -255,3 +255,50 @@ table.compact th, table.compact td { padding: 4px 8px; }
 .event-guardrail .event-kind, .event-guardrail .event-title { color: var(--red); font-weight: 700; }
 .event-approval { border-left-color: var(--amber); background: var(--amber-tint); }
 .event-call { border-left-color: var(--green); }
+
+.nav-link, .row-link { font-weight: 600; font-size: 14px; white-space: nowrap; }
+.nav-link { align-self: center; margin-right: 8px; }
+
+.phone-wrap { display: grid; justify-items: center; gap: 6px; }
+.phone {
+  overflow: hidden;
+  width: min(300px, 100%);
+  border: 6px solid var(--ink);
+  border-radius: 22px;
+  background: #e8e2d6;
+}
+.phone-header {
+  display: grid;
+  padding: 8px 14px;
+  background: var(--navy);
+  color: #fff;
+  font-size: 12px;
+}
+.phone-header strong { font-size: 15px; }
+.phone-chat { display: grid; gap: 8px; min-height: 120px; padding: 12px 10px; }
+.bubble {
+  display: grid;
+  justify-self: start;
+  max-width: 92%;
+  padding: 7px 10px;
+  border-radius: 2px 10px 10px 10px;
+  background: var(--surface);
+  font-size: 14px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.bubble time { justify-self: end; color: var(--muted); font-size: 11px; }
+
+.approvals { display: grid; gap: 14px; max-width: 820px; }
+.approval p { margin-bottom: 8px; }
+.approval-ask { font-size: 20px; font-weight: 700; }
+.guardrail-note {
+  padding: 8px 10px;
+  border-left: 3px solid var(--red);
+  border-radius: 2px;
+  background: var(--red-tint);
+  color: var(--red);
+}
+.decision { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-top: 12px; }
+.decision button + .muted + button { margin-left: 14px; }
+.decided { display: grid; gap: 6px; margin: 10px 0 0; padding: 0; list-style: none; }

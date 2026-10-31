@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 import * as api from './api'
-import { CAUSES, EVENT_KINDS, LANGUAGES, percent, stateOf } from './labels'
+import { approvalStatus, approvalTitle, CAUSES, EVENT_KINDS, LANGUAGES, percent, stateOf } from './labels'
+import PhoneMockup from './PhoneMockup'
 import SignalCharts from './SignalCharts'
 import { usePoll } from './usePoll'
 
 const QUIET_RATIO = 0.6 // Same line as the detector: below this the shop has gone quiet.
+const DETAIL_LIMIT = 160 // The real agent's tool results run to pages of JSON.
 
 const days = (count) => `${count} ${count === 1 ? 'day' : 'days'}`
 
@@ -20,9 +22,10 @@ function signalSentence({ volume_ratio: ratio, offline_days: offline }) {
 function eventDetail(detail) {
   if (!detail) return null
   if (detail.text) return detail.text
-  return Object.entries(detail)
+  const text = Object.entries(detail)
     .map(([key, value]) => `${key}: ${typeof value === 'object' ? JSON.stringify(value) : value}`)
     .join(' · ')
+  return text.length > DETAIL_LIMIT ? `${text.slice(0, DETAIL_LIMIT)}…` : text
 }
 
 function Trace({ events, working }) {
@@ -139,13 +142,19 @@ export default function CaseDetail({ caseId, runStarted }) {
               {approvals.map((approval) => (
                 <div className="fact-row" key={approval.id}>
                   <dt>Approval</dt>
-                  <dd>{approval.kind.replace('_', ' ')} of {approval.amount}: {approval.status}</dd>
+                  <dd>
+                    {approvalTitle(approval)}: {approvalStatus(approval.status)}
+                    {approval.status === 'pending' && <> · <a href="#/manager">Review</a></>}
+                  </dd>
                 </div>
               ))}
             </dl>
           </section>
         </div>
-        <Trace events={events} working={item.status === 'working' || item.status === 'on_call'} />
+        <div className="case-column">
+          <PhoneMockup events={events} owner={merchant.owner} />
+          <Trace events={events} working={item.status === 'working' || item.status === 'on_call'} />
+        </div>
       </main>
     </>
   )

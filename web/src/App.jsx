@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import Board from './Board'
 import CaseDetail from './CaseDetail'
+import Manager from './Manager'
 
 function useHash() {
   const [hash, setHash] = useState(window.location.hash)
@@ -18,11 +19,9 @@ export default function App() {
   const [runStarted, setRunStarted] = useState(false)
   const caseId = hash.match(/^#\/cases\/([\w-]+)$/)?.[1]
 
-  return (
-    <div className="page">
-      {caseId
-        ? <CaseDetail key={caseId} caseId={caseId} runStarted={runStarted} />
-        : <Board runStarted={runStarted} setRunStarted={setRunStarted} />}
-    </div>
-  )
+  let screen = <Board runStarted={runStarted} setRunStarted={setRunStarted} />
+  if (caseId) screen = <CaseDetail key={caseId} caseId={caseId} runStarted={runStarted} />
+  if (hash === '#/manager') screen = <Manager />
+
+  return <div className="page">{screen}</div>
 }

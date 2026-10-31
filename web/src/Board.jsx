@@ -43,6 +43,7 @@ function CaseRow({ item, callDisabled, onCall }) {
             Call
           </button>
         )}
+        {item.status === 'awaiting_approval' && <a className="row-link" href="#/manager">Review</a>}
       </td>
     </tr>
   )
@@ -95,6 +96,7 @@ export default function Board({ runStarted, setRunStarted }) {
           </span>
         )}
         <div className="actions">
+          {board && <a className="nav-link" href="#/manager">Manager view ({board.headline.needs_approval})</a>}
           <button type="button" className="primary" disabled={!board || busy || running || !statuses.has('new')} onClick={run}>
             {running ? 'Running…' : 'Run agent'}
           </button>

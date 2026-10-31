@@ -14,5 +14,12 @@ export const getBoard = () => request('/board')
 export const getCase = (caseId) => request(`/cases/${caseId}`)
 export const runAll = () => request('/run', { method: 'POST' })
 export const runCase = (caseId) => request(`/cases/${caseId}/run`, { method: 'POST' })
+export const getApprovals = () => request('/approvals')
+export const decide = (approvalId, decision) =>
+  request(`/approvals/${approvalId}/decide`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ decision }),
+  })
 export const reset = () => request('/reset', { method: 'POST' })
 export const startCall = (caseId) => request(`/cases/${caseId}/call`, { method: 'POST' })

@@ -22,7 +22,7 @@ const STATUSES = {
   control: 'Control group',
 }
 
-const BUCKETS = {
+export const BUCKETS = {
   handled_remote: 'Handled remotely',
   rep_visit: 'Rep visit',
   needs_approval: 'Needs approval',
@@ -48,6 +48,13 @@ export const stateOf = (item) => {
     tone: done ? item.bucket : item.status,
   }
 }
+
+// `amount` is a one-off refund for a waiver, but the new monthly rent for a counter-offer.
+export const approvalTitle = ({ kind, amount }) =>
+  kind === 'waiver' ? `Refund of Rs ${amount}` : `Counter-offer: Rs ${amount} monthly rent`
+
+// The API stores a rejection as `rejectd`, so match it either way.
+export const approvalStatus = (status) => (status.startsWith('reject') ? 'rejected' : status)
 
 export const percent = (ratio) => `${Math.round(ratio * 100)}%`
 
