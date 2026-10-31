@@ -196,8 +196,8 @@ State is `todo`, `doing` or `done`. Keep each task on its own line.
 |---|---|---|---|
 | T1 | Simulator, detector, API contract with stub agent | A1 | done |
 | T2 | Real agent loop with read-only tools, working on one case | A1 | done |
-| T3 | Action tools and guardrails, including the waiver block | A1 | doing |
-| T4 | Real agent gets all 37 causes right, stub deleted, `agent_mode` set to `live` | A1 | todo |
+| T3 | Action tools and guardrails, including the waiver block | A1 | done |
+| T4 | Real agent gets all 37 causes right, stub deleted, `agent_mode` set to `live` | A1 | doing |
 | T5 | Deck fixes and final presentation | A1 | todo |
 | T6 | Vite + React app showing the ops board from `/api/board` | A2 | done |
 | T7 | Case detail with live agent trace | A2 | done |
