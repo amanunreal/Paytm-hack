@@ -90,7 +90,7 @@ this, so it is calling her. This is a real call, in Hindi. Aman will play Sunita
 
 | Wapsi says | A1 replies |
 |---|---|
-| Greets you, says it is calling from Paytm | "Haan ji, boliye." |
+| Greets you and asks if you can talk for two minutes | "Haan ji, boliye." |
 | Says your money is safe, asks if the box has no sound | "Haan, teen din se awaaz nahi aa rahi." |
 | Asks you to switch the box off, wait 10 seconds, switch it on | "Theek hai." *Wait 3 seconds.* "Kar diya." |
 | Asks if the light is on and the box is working | "Haan, batti jal gayi. Box chalu ho gaya." |
