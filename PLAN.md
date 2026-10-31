@@ -171,7 +171,7 @@ State is `todo`, `doing` or `done`. Keep each task on its own line.
 | T5 | Deck fixes and final presentation | A1 | todo |
 | T6 | Vite + React app showing the ops board from `/api/board` | A2 | done |
 | T7 | Case detail with live agent trace | A2 | todo |
-| T8 | Bolna agent with Sarvam voice: one Hindi call rings a phone | A2 | todo |
+| T8 | Bolna agent with Sarvam voice: one Hindi call rings a phone | A2 | doing |
 | T9 | `wapsi/voice.py`: real call, poll transcript, finish the case | A2 | todo |
 | T10 | Phone mockup and manager approval view | A2 | todo |
 | T11 | Results page showing the simulated label and assumptions | A2 | todo |
