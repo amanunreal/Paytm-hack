@@ -1,0 +1,15 @@
+[project]
+name = "wapsi"
+version = "0.1.0"
+description = "An AI teammate that wins back Paytm merchants who have gone quiet"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "anthropic",
+    "fastapi",
+    "httpx",
+    "python-dotenv",
+    "uvicorn",
+]
+
+[tool.uv]
+package = false
