@@ -169,7 +169,7 @@ State is `todo`, `doing` or `done`. Keep each task on its own line.
 | T3 | Action tools and guardrails, including the waiver block | A1 | todo |
 | T4 | Real agent gets all 37 causes right, stub deleted, `agent_mode` set to `live` | A1 | todo |
 | T5 | Deck fixes and final presentation | A1 | todo |
-| T6 | Vite + React app showing the ops board from `/api/board` | A2 | todo |
+| T6 | Vite + React app showing the ops board from `/api/board` | A2 | doing |
 | T7 | Case detail with live agent trace | A2 | todo |
 | T8 | Bolna agent with Sarvam voice: one Hindi call rings a phone | A2 | todo |
 | T9 | `wapsi/voice.py`: real call, poll transcript, finish the case | A2 | todo |
