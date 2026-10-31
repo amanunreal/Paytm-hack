@@ -203,17 +203,19 @@ export default function Board({
 
       <section aria-labelledby="by-cause">
         <h2 id="by-cause">By cause</h2>
-        {groups.map((group) => {
-          const key = group.cause ?? 'new'
-          return (
-            <CauseGroup
-              key={key}
-              group={group}
-              open={openGroups.includes(key) || group.cause === null}
-              onToggle={() => toggle(key)}
-            />
-          )
-        })}
+        <div className="groups">
+          {groups.map((group) => {
+            const key = group.cause ?? 'new'
+            return (
+              <CauseGroup
+                key={key}
+                group={group}
+                open={openGroups.includes(key) || group.cause === null}
+                onToggle={() => toggle(key)}
+              />
+            )
+          })}
+        </div>
       </section>
     </main>
   )
