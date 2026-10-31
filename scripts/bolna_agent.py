@@ -49,17 +49,26 @@ SYSTEM_PROMPT = """आप वापसी हैं, पेटीएम की A
 बातचीत का क्रम:
 1. बताइए कि उनके पैसे सुरक्षित हैं और भुगतान आ रहे हैं।
 2. पूछिए कि क्या साउंडबॉक्स से भुगतान की आवाज़ नहीं आ रही।
-3. उनसे डिब्बा 10 सेकंड के लिए बंद करके फिर चालू करवाइए, और उनके करने तक रुकिए।
+3. उनसे कहिए कि पावर बटन दबाए रखें जब तक डिब्बा बंद न हो जाए, 10 सेकंड रुकें, फिर पावर बटन दबाकर चालू करें। उनके करने तक रुकिए।
 4. पूछिए कि क्या बत्ती जली और डिब्बा चालू हो गया।
-5. ठीक हो गया तो धन्यवाद देकर बात ख़त्म कीजिए। नहीं हुआ तो बताइए कि हमारा प्रतिनिधि संपर्क करेगा, और बात ख़त्म कीजिए।
+5. ठीक हो गया तो एक बार धन्यवाद कहिए। नहीं हुआ तो बताइए कि हमारा प्रतिनिधि संपर्क करेगा।
 
 नियम:
 - हर बार एक या दो छोटे वाक्य बोलिए, और एक बार में एक ही बात पूछिए।
 - अगर वे अभी बात न कर सकें या बाद में कॉल करने को कहें, तो कहिए कि हम दोबारा कॉल करेंगे, और बात ख़त्म कीजिए।
 - कभी बैंक खाता, IFSC, OTP, PIN या कार्ड की जानकारी न माँगिए, न सुनिए, न बताइए। अगर वे बताने लगें तो विनम्रता से रोकिए और कहिए कि यह काम पेटीएम ऐप के सत्यापित तरीक़े से ही होता है।
-- डिब्बे के बटन या बनावट के बारे में अंदाज़ा मत लगाइए। अगर उन्हें बंद करने का तरीक़ा न मिले, तो बताइए कि हमारा प्रतिनिधि संपर्क करेगा, और बात ख़त्म कीजिए।
+- अगर वे पूछें कि बंद कैसे करें, तो तीसरा क़दम धीरे से समझाइए। बटन की जगह आपको नहीं पता, इसलिए डिब्बे पर पावर के निशान वाला बटन ढूँढने को कहिए। दो बार समझाने पर भी न हो, तभी कहिए कि हमारा प्रतिनिधि संपर्क करेगा।
+- अगर वे कहें कि रीस्टार्ट कर दिया, तो सीधे चौथे क़दम पर जाइए।
+- विदा लेने के बाद कोई नया सवाल मत पूछिए, और जो कह चुकी हैं उसे मत दोहराइए।
 - कोई छूट, रिफ़ंड या शुल्क माफ़ी का वादा मत कीजिए।
 - पूछे जाने पर साफ़ बताइए कि आप AI हैं। वे इंसान से बात करना चाहें तो कहिए कि हमारी टीम उन्हें कॉल करेगी।"""
+
+HANGUP_PROMPT = (
+    "End the call only if the agent has already said goodbye or thanked the merchant to close "
+    "the call: the box is fixed, a representative will contact them, or the agent will call "
+    "again later. Do not end it while the agent is waiting for the merchant to restart the box "
+    "or has just asked a question."
+)
 
 
 def client():
@@ -82,7 +91,6 @@ def agent_payload():
             "language": "hi",
             "stream": True,
             "endpointing": 500,
-            "keywords": "पेटीएम, साउंडबॉक्स, QR, सिम",
             "context": "A Paytm merchant in India is on a support call about a Soundbox that has gone offline.",
         },
         "synthesizer": {
@@ -112,6 +120,11 @@ def agent_payload():
                 "task_config": {
                     "call_terminate": 180,
                     "hangup_after_silence": 30,
+                    "hangup_after_LLMCall": True,
+                    "call_cancellation_prompt": HANGUP_PROMPT,
+                    "call_hangup_message": "धन्यवाद, नमस्ते।",
+                    # One word let noise cut the agent off mid-sentence.
+                    "number_of_words_for_interruption": 2,
                     "trigger_user_online_message_after": 20,
                     # Not in Bolna's docs, but the live agent has it. The default is English.
                     "check_user_online_message": "क्या आप लाइन पर हैं?",
