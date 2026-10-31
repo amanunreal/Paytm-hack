@@ -46,25 +46,63 @@ READ_TOOLS = [
     read_only("get_last_year", "This shop's payments and device activity around the same dates last year."),
 ]
 
-SUBMIT_DIAGNOSIS = {
-    "name": "submit_diagnosis",
-    "description": "Record your conclusion for this case. Call this once, when you are finished investigating.",
-    "strict": True,
-    "input_schema": {
-        "type": "object",
-        "properties": {
-            "cause": {"type": "string", "enum": CAUSES,
-                      "description": "Use unclear when the evidence does not support one cause."},
-            "confidence": {"type": "string", "enum": ["low", "medium", "high"]},
-            "evidence": {"type": "array", "items": {"type": "string"},
-                         "description": "The specific facts from the tools that support the cause."},
-            "summary": {"type": "string",
-                        "description": "One plain sentence a field manager can read at a glance."},
-        },
-        "required": ["cause", "confidence", "evidence", "summary"],
-        "additionalProperties": False,
-    },
-}
+
+def action(name, description, properties=None):
+    properties = properties or {}
+    return {
+        "name": name,
+        "description": description,
+        "strict": True,
+        "input_schema": {"type": "object", "properties": properties, "required": list(properties),
+                         "additionalProperties": False},
+    }
+
+
+TEXT = {"type": "string"}
+
+ACTION_TOOLS = [
+    action("record_diagnosis", "Record why this shop went quiet. Call this once, before taking any action.", {
+        "cause": {"type": "string", "enum": CAUSES,
+                  "description": "Use unclear when the evidence does not support one cause."},
+        "confidence": {"type": "string", "enum": ["low", "medium", "high"]},
+        "evidence": {"type": "array", "items": TEXT,
+                     "description": "The specific facts from the tools that support the cause."},
+        "summary": {"type": "string", "description": "One plain sentence a field manager can read at a glance."},
+    }),
+    action("refresh_sim", "Reset the device's SIM session from the network side. This works on an offline "
+                          "device, but the merchant must then power cycle it."),
+    action("start_call", "Call the merchant in their language to guide a power cycle or explain a problem. "
+                         "Returns what happened on the call.", {
+        "goal": {"type": "string", "description": "What this call should achieve."},
+    }),
+    action("order_replacement", "Order a replacement device for a rep to carry.", {"reason": TEXT}),
+    action("book_visit", "Book a field rep visit. Only for problems that need a person on site.", {
+        "reason": TEXT,
+        "rep_brief": {"type": "string", "description": "What the rep must carry and know, including what has "
+                                                       "already been tried."},
+    }),
+    action("create_ticket", "Raise a ticket with the support team, with evidence attached.", {
+        "title": TEXT, "evidence": TEXT,
+    }),
+    action("offer_waiver", "Refund a charge that was clearly made in error, within your limit.", {
+        "amount": {"type": "integer", "description": "Rupees to refund."}, "reason": TEXT,
+    }),
+    action("request_approval", "Ask the Area Sales Manager to decide on a large waiver or a counter-offer.", {
+        "kind": {"type": "string", "enum": ["waiver", "counter_offer"]},
+        "amount": {"type": "integer", "description": "Rupees to refund, or the proposed monthly rent."},
+        "reason": TEXT,
+        "rep_brief": {"type": "string", "description": "For a counter-offer, what the rep needs to know. "
+                                                       "Otherwise an empty string."},
+    }),
+    action("send_whatsapp", "Send the merchant a WhatsApp message, written in their language and script.", {
+        "text": TEXT,
+    }),
+    action("close_case", "Finish this case. Call this last, once your actions are done.", {
+        "outcome": {"type": "string",
+                    "enum": ["handled_remote", "rep_visit", "needs_approval", "no_action", "awaiting_call"]},
+        "summary": {"type": "string", "description": "One plain sentence on what you did and what happens next."},
+    }),
+]
 
 
 class CaseTools:

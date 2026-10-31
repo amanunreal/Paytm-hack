@@ -10,6 +10,7 @@ from pathlib import Path
 
 SEED = 7
 TODAY = date(2026, 10, 31)  # The 8:00 AM board: data runs up to yesterday.
+SIM_VERSION = 2  # Bump when the schema or planted data changes, so old local DBs rebuild.
 HISTORY_DAYS = 400  # Over a year, so seasonal closures can be seen.
 ONSET_DAYS = 3  # Planted problems started this many days before TODAY.
 MERCHANT_COUNT = 500
@@ -54,6 +55,10 @@ SCENARIO_MIX = {
 }
 
 SHOP_TYPES = ["Kirana", "Medical", "Chai stall", "Mobile repair", "Sweets", "Tailor", "Dhaba", "Hardware"]
+RESTART_FIXES_DEVICE = 2  # Of the 7 device faults in the AI cohort.
+RESTART_FAILS_SIM = 2  # Of the 10 SIM problems in the AI cohort.
+REPEAT_BILLING_MONTHS = 3
+
 # Language -> (first names, last names).
 NAMES = {
     "hi": (["Ramesh", "Sunita", "Manoj", "Geeta", "Vikas", "Pooja", "Rekha", "Deepak"],
@@ -75,7 +80,8 @@ URDU_NAMES = ["Mohd. Irfan Khan", "Nasreen Khan", "Salim Ansari", "Shabana Ansar
 SCHEMA = """
 CREATE TABLE merchants (
     id TEXT PRIMARY KEY, owner TEXT, shop_type TEXT, area TEXT, state TEXT, language TEXT,
-    phone TEXT, device_model TEXT, monthly_rent INTEGER, cohort TEXT
+    phone TEXT, device_model TEXT, monthly_rent INTEGER, cohort TEXT,
+    opted_out INTEGER DEFAULT 0
 );
 CREATE TABLE daily (
     merchant_id TEXT, day TEXT, txn_count INTEGER, gmv INTEGER,
@@ -91,6 +97,7 @@ CREATE TABLE tickets (
     merchant_id TEXT, opened TEXT, category TEXT, status TEXT, body TEXT
 );
 CREATE TABLE ground_truth (merchant_id TEXT PRIMARY KEY, scenario TEXT);
+CREATE TABLE world (merchant_id TEXT PRIMARY KEY, restart_fixes INTEGER);
 CREATE INDEX daily_day ON daily (day);
 """
 
@@ -121,6 +128,8 @@ def build_merchants(rng):
             "avg_ticket": rng.randint(80, 350),
             "closed_sundays": rng.random() < 0.2,
             "scenario": None,
+            "restart_fixes": True,
+            "repeat_billing": False,
         })
 
     weak = [m for m in merchants if m["area"] in WEAK_SIGNAL_AREAS]
@@ -137,7 +146,25 @@ def build_merchants(rng):
     for merchant in merchants:
         if merchant["area"] == DIP_AREA:
             merchant["scenario"] = "area_dip"
+    plant_outcomes(merchants)
     return merchants
+
+
+def plant_outcomes(merchants):
+    """Decide how the world responds to the agent. Sorted, so reruns stay identical."""
+    def ai(scenario):
+        return sorted(
+            (m for m in merchants if m["cohort"] == "ai" and m["scenario"] == scenario),
+            key=lambda m: m["id"],
+        )
+
+    # A restart fixes only some boxes. The others need a visit with new hardware.
+    for merchant in ai("device_fault")[:-RESTART_FIXES_DEVICE]:
+        merchant["restart_fixes"] = False
+    for merchant in ai("sim_network")[:RESTART_FAILS_SIM]:
+        merchant["restart_fixes"] = False
+    # One merchant was overcharged for months, which is more than the agent may refund.
+    next(m for m in ai("billing_anger") if m["monthly_rent"] == 135)["repeat_billing"] = True
 
 
 def simulate_day(rng, merchant, day):
@@ -201,21 +228,28 @@ def plant_records(rng, merchant, conn):
             (merchant["id"], start.isoformat(), f"Payment not received in bank for {ONSET_DAYS} days"),
         )
     elif scenario == "billing_anger":
-        day = TODAY.replace(day=1).isoformat() if TODAY.day > ONSET_DAYS else start.isoformat()
-        conn.execute(
-            "INSERT INTO billing VALUES (?, ?, 'rent_duplicate', ?, 'Second rent cut from settlement this month')",
-            (merchant["id"], day, rent),
-        )
+        months = REPEAT_BILLING_MONTHS if merchant["repeat_billing"] else 1
+        first_of_month = TODAY.replace(day=1)
+        for _ in range(months):
+            conn.execute(
+                "INSERT INTO billing VALUES (?, ?, 'rent_duplicate', ?, 'Second rent cut from settlement this month')",
+                (merchant["id"], first_of_month.isoformat(), rent),
+            )
+            first_of_month = (first_of_month - timedelta(days=1)).replace(day=1)
+        body = f"Rs {rent} rent cut twice from my settlement, no message received"
+        if months > 1:
+            body = f"Rs {rent} rent cut twice every month for {months} months, no message received"
         conn.execute(
             "INSERT INTO tickets VALUES (?, ?, 'billing', 'open', ?)",
-            (merchant["id"], start.isoformat(), f"Rs {rent} rent cut twice from my settlement, no message received"),
+            (merchant["id"], start.isoformat(), body),
         )
 
 
 def build(db_path=DB_PATH, seed=SEED):
     rng = random.Random(seed)
     db_path.parent.mkdir(parents=True, exist_ok=True)
-    db_path.unlink(missing_ok=True)
+    for suffix in ("", "-wal", "-shm"):
+        Path(f"{db_path}{suffix}").unlink(missing_ok=True)
     conn = sqlite3.connect(db_path)
     conn.executescript(SCHEMA)
 
@@ -224,7 +258,8 @@ def build(db_path=DB_PATH, seed=SEED):
     months = sorted({day.replace(day=1) for day in days})[-6:]
     for merchant in merchants:
         conn.execute(
-            "INSERT INTO merchants VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO merchants (id, owner, shop_type, area, state, language, phone, device_model, "
+            "monthly_rent, cohort) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             tuple(merchant[k] for k in ("id", "owner", "shop_type", "area", "state", "language", "phone",
                                         "device_model", "monthly_rent", "cohort")),
         )
@@ -236,9 +271,11 @@ def build(db_path=DB_PATH, seed=SEED):
             "INSERT INTO billing VALUES (?, ?, 'rent', ?, 'Monthly device rent')",
             [(merchant["id"], month.isoformat(), merchant["monthly_rent"]) for month in months],
         )
+        conn.execute("INSERT INTO world VALUES (?, ?)", (merchant["id"], merchant["restart_fixes"]))
         if merchant["scenario"]:
             conn.execute("INSERT INTO ground_truth VALUES (?, ?)", (merchant["id"], merchant["scenario"]))
             plant_records(rng, merchant, conn)
+    conn.execute(f"PRAGMA user_version = {SIM_VERSION}")
     conn.commit()
     return conn
 

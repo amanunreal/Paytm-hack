@@ -11,6 +11,7 @@ SCHEMA = """
 DROP TABLE IF EXISTS cases;
 DROP TABLE IF EXISTS events;
 DROP TABLE IF EXISTS approvals;
+DROP TABLE IF EXISTS contacts;
 CREATE TABLE cases (
     id TEXT PRIMARY KEY, merchant_id TEXT, cohort TEXT, status TEXT, cause TEXT,
     bucket TEXT, summary TEXT, rep_brief TEXT, volume_ratio REAL, offline_days INTEGER
@@ -23,6 +24,7 @@ CREATE TABLE approvals (
     id INTEGER PRIMARY KEY AUTOINCREMENT, case_id TEXT, kind TEXT, amount INTEGER,
     reason TEXT, status TEXT, next_bucket TEXT
 );
+CREATE TABLE contacts (merchant_id TEXT, channel TEXT, ts TEXT);
 """
 
 
@@ -37,11 +39,24 @@ def connect():
     return conn
 
 
-def ensure_db():
-    """Build the merchant data on first run and open the 8:00 AM state."""
-    path = db_path()
+def is_current(path):
+    """True when the database was built by this version of the simulator."""
     if not path.exists():
+        return False
+    conn = sqlite3.connect(path)
+    version = conn.execute("PRAGMA user_version").fetchone()[0]
+    conn.close()
+    return version == sim.SIM_VERSION
+
+
+def ensure_db(keep_cases=False):
+    """Build the merchant data if needed, then open the 8:00 AM state."""
+    path = db_path()
+    current = is_current(path)
+    if not current:
         sim.build(path).close()
+    if keep_cases and current:
+        return  # A demo may be running, so leave its state alone.
     with connect() as conn:
         reset(conn)
 
