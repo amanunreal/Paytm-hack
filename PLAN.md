@@ -12,6 +12,36 @@ manager for bigger decisions, and shows its impact against a control group.
 **The one sentence to land:** box offline but QR payments still arriving means the
 device is broken, not the merchant gone.
 
+## Exact scope
+
+**The problem:** when a Paytm device merchant goes quiet, nobody knows why. Today the
+only fix is a costly field visit, or nothing, so the merchant stops paying or leaves.
+
+**The users:** Area Sales Manager, field sales rep, support team and the merchant.
+
+**We solve these six problems, and know when to do nothing:**
+
+| # | Problem | How Wapsi knows | What Wapsi does | When a human steps in | Demo case |
+|---|---|---|---|---|---|
+| 1 | Device fault | Box offline, payments normal, signal healthy | Guides a restart, orders a replacement | Rep visits with the new unit | M0044 |
+| 2 | SIM or network | Box offline, weak signal in shop and area | Hindi call guides a restart, refreshes the SIM session | Only if hardware must be swapped | M0418 (live call) |
+| 3 | Money problem | Settlements failing, bank or KYC reason | Raises a ticket with evidence, sends the merchant to a verified flow | Support clears the block | M0142 |
+| 4 | Billing anger | Duplicate rent, open complaint, volume down | Reverses a clear error, confirms on WhatsApp | Manager approves waivers over the limit | M0285 |
+| 5 | Competitor switch | Volume down, area normal, nothing else wrong | Prepares a counter-offer and a rep brief | Manager approves, rep visits | M0393 |
+| 6 | Closed or seasonal | All activity stopped, same dates last year too | Stops chasing | None | M0031 |
+| - | Area-wide dip | The whole area fell together | **Nothing, on purpose** | None | Guwahati, 25 shops |
+
+**We are not building these today:**
+
+- Real Paytm integrations: every system behind the tools is simulated
+- A real WhatsApp connection, or a separate rep app
+- Live calls in languages other than Hindi
+- The production stack on slide 6, or the learning ranking
+- Real impact numbers: outcomes come from assumptions shown on the page
+
+**We are done when** the six-step demo below runs twice in a row from `/api/reset`, using
+the real agent and a real phone call.
+
 ## The demo (3 minutes, one browser tab plus one phone)
 
 | # | What the audience sees | Screen |
