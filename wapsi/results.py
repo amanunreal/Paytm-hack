@@ -2,6 +2,9 @@
 from wapsi.sim import TODAY
 
 AVG_RENT = 100
+# What one device merchant earns Paytm a year, rounded down from public Q1 FY27 numbers:
+# (net payment revenue Rs 601 Cr + financial services Rs 814 Cr) x 4 / 1.57 Cr = Rs 3,605.
+YEARLY_VALUE = 3000
 VISIT_COST = 72.5  # Midpoint of Rs 55-90.
 CALL_COST = 12.5  # Midpoint of Rs 10-15.
 MONTHS_KEPT = 12
@@ -35,6 +38,8 @@ def results(conn):
                     "visits": len(control), "cost": round(control_cost)},
         "incremental_won_back": round(ai_won - control_won, 1),
         "rent_kept": round((ai_won - control_won) * AVG_RENT * MONTHS_KEPT),
+        "revenue_kept": round((ai_won - control_won) * YEARLY_VALUE),
         "assumptions": {"recovery_with_wapsi_vs_control": RECOVERY, "avg_rent": AVG_RENT,
+                        "yearly_value": YEARLY_VALUE,
                         "visit_cost": VISIT_COST, "call_cost": CALL_COST, "months_kept": MONTHS_KEPT},
     }

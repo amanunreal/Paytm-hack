@@ -48,7 +48,7 @@ export default function Results() {
     ['Field visits saved', control.visits - ai.visits],
     ['Cost saved', rupees(control.cost - ai.cost)],
     ['Extra merchants won back', signed(results.incremental_won_back)],
-    [`Rent kept over ${assumptions.months_kept} months`, rupees(results.rent_kept)],
+    ['Revenue kept a year', rupees(results.revenue_kept)],
   ]
 
   return (
@@ -140,8 +140,8 @@ export default function Results() {
               <dd>{rupees(assumptions.visit_cost)} each. Every control case costs one visit.</dd>
               <dt>Wapsi contact</dt>
               <dd>{rupees(assumptions.call_cost)} per AI case</dd>
-              <dt>Device rent</dt>
-              <dd>{rupees(assumptions.avg_rent)} a month on average, kept for {assumptions.months_kept} months</dd>
+              <dt>Merchant value</dt>
+              <dd>{rupees(assumptions.yearly_value)} a year each, from Paytm's Q1 FY27 payment and financial services revenue</dd>
               <dt>Left out</dt>
               <dd>Closed or seasonal shops, which Wapsi does not chase</dd>
               <dt>As of</dt>

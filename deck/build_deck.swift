@@ -1,6 +1,6 @@
 // Patches the original pitch PDF in place, keeping its design and icons.
 // Usage: swift deck/build_deck.swift <original.pdf> <fonts dir> <output.pdf>
-// Fonts dir needs Carlito (Regular, Bold, Italic), the deck's own font.
+// Fonts dir needs Carlito (Regular, Bold, Italic) and Caladea Bold, the deck's own fonts.
 // Positions are in the 1400 px wide coordinates of a rendered slide.
 import AppKit
 import CoreText
@@ -11,7 +11,7 @@ guard args.count == 4, let doc = PDFDocument(url: URL(fileURLWithPath: args[1]))
     print("usage: build_deck <original.pdf> <fonts dir> <output.pdf>")
     exit(1)
 }
-for name in ["Carlito-Regular", "Carlito-Bold", "Carlito-Italic"] {
+for name in ["Carlito-Regular", "Carlito-Bold", "Carlito-Italic", "Caladea-Bold"] {
     CTFontManagerRegisterFontsForURL(URL(fileURLWithPath: "\(args[2])/\(name).ttf") as CFURL, .process, nil)
 }
 
@@ -124,14 +124,22 @@ func usp() {
 }
 
 func impact() {
-    fill(88, 506, 268, 58, navy)
-    text("a month's rent kept if 25% more are won back than control*", 94, 508, width: 258, size: 13, c: white, line: 23)
-    fill(366, 506, 256, 58, navy)
-    text("cheaper: a 2-minute AI call is ₹10–15, a visit ₹55–90", 373, 508, width: 246, size: 13, c: white, line: 23)
-    fill(90, 620, 530, 60, navy)
-    text("*Assumes 5% of 1.57 Cr devices go quiet (not churn) a month at ~₹100 rent. Kept for a year, one month's "
-         + "win-backs are worth ~₹24 Cr. Excludes lost payment volume and loan cross-sell.", 94, 622, width: 526,
-         size: 10, c: white, line: 18)
+    fill(58, 72, 1300, 66, white)
+    text("A kept merchant is worth far more than rent", 63, 66, width: 1280, size: 33, c: navy, font: "Caladea-Bold")
+    fill(88, 236, 540, 450, navy)
+    let bold = "Carlito-Bold"
+    let stats: [(String, String, CGFloat, CGFloat)] = [
+        ("~₹3,000", "earned a year from each device merchant, not just ₹1,200 rent*", 94, 246),
+        ("~₹12", "for a 2-minute AI call to try to save them", 373, 246),
+        ("~4 L", "merchants kept a year if 10% churn and Wapsi saves 1 in 4*", 94, 436),
+        ("~₹118 Cr", "revenue kept every year, and it stacks*", 373, 436),
+    ]
+    for stat in stats {
+        text(stat.0, stat.2, stat.3, width: 270, size: 37, c: white, font: bold)
+        text(stat.1, stat.2, stat.3 + 72, width: 250, size: 13, c: white, line: 23)
+    }
+    text("*Paytm Q1 FY27: net payment plus financial services revenue, annualised, per 1.57 Cr devices, rounded down. "
+         + "The 10% and 1 in 4 are assumptions a pilot would test.", 94, 622, width: 526, size: 10, c: white, line: 18)
 }
 
 func business() {

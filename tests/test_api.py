@@ -122,6 +122,7 @@ class DemoFlowTest(unittest.TestCase):
         self.assertTrue(results["simulated"])
         self.assertEqual(results["ai"]["visits"], 9)
         self.assertGreater(results["incremental_won_back"], 0)
+        self.assertEqual(results["revenue_kept"], round(14.75 * 3000))
 
     def test_unknown_case_is_404(self):
         self.assertEqual(self.client.get("/api/cases/C-NOPE").status_code, 404)
