@@ -15,7 +15,7 @@ device is broken, not the merchant gone.
 ## Exact scope
 
 **The problem:** when a Paytm device merchant goes quiet, nobody knows why. Today the
-only fix is a costly field visit, or nothing, so the merchant stops paying or leaves.
+only fix is a field visit, nothing for reomote areas, so the merchant stops paying or leaves.
 
 **The users:** Area Sales Manager, field sales rep, support team and the merchant.
 
