@@ -9,12 +9,12 @@ from pydantic import BaseModel
 
 load_dotenv()
 
-from wapsi import detector, results, sim, store, stub_agent, voice  # noqa: E402
+from wapsi import actions, agent, detector, results, sim, store, voice  # noqa: E402
 
 
 @asynccontextmanager
 async def lifespan(_app):
-    store.ensure_db()
+    store.ensure_db(prerun=True)
     yield
 
 
@@ -43,7 +43,7 @@ def board():
         statuses = Counter(case["status"] for case in cases)
         return {
             "date": sim.TODAY.isoformat(),
-            "agent_mode": stub_agent.AGENT_MODE,
+            "agent_mode": agent.AGENT_MODE,
             "headline": {
                 "flagged": len(cases),
                 "handled_remote": buckets["handled_remote"],
@@ -81,7 +81,7 @@ def events(after: int = 0):
 
 @app.post("/api/run", status_code=202)
 def run(tasks: BackgroundTasks):
-    tasks.add_task(stub_agent.run_all)
+    tasks.add_task(agent.run_all)
     return {"started": True}
 
 
@@ -89,7 +89,7 @@ def run(tasks: BackgroundTasks):
 def run_case(case_id: str, tasks: BackgroundTasks):
     with store.connect() as conn:
         get_case(conn, case_id)
-    tasks.add_task(stub_agent.run_one, case_id)
+    tasks.add_task(agent.run_one, case_id)
     return {"started": True}
 
 
@@ -116,11 +116,7 @@ def decide(approval_id: int, body: Decision):
         row = conn.execute("SELECT * FROM approvals WHERE id = ?", (approval_id,)).fetchone()
         if row is None or row["status"] != "pending":
             raise HTTPException(409, "Approval is not pending")
-        conn.execute("UPDATE approvals SET status = ? WHERE id = ?", (f"{body.decision}d", approval_id))
-        bucket = row["next_bucket"] if body.decision == "approve" else "rep_visit"
-        store.update_case(conn, row["case_id"], status="done", bucket=bucket)
-        store.add_event(conn, row["case_id"], "approval", f"Manager: {body.decision}", {"kind": row["kind"]})
-        return {"bucket": bucket}
+        return {"bucket": actions.apply_decision(conn, row, body.decision)}
 
 
 @app.get("/api/results")
@@ -130,7 +126,8 @@ def get_results():
 
 
 @app.post("/api/reset")
-def reset():
+def reset(fresh: bool = False):
+    """Back to the demo's opening board. With fresh, every case is new for a real agent run."""
     with store.connect() as conn:
-        store.reset(conn)
+        store.reset(conn, prerun=not fresh)
     return {"reset": True}

@@ -1,6 +1,7 @@
 """Run the real agent on every AI case and score it. Costs API credit.
 
-Works on a throwaway copy of the database, so a running demo is never touched.
+Works on a throwaway database, so a running demo is never touched. With --save, a passing
+run becomes wapsi/prerun.json, which /api/reset restores. A failing run is never saved.
 This is the only agent-related code allowed to read ground_truth.
 """
 import os
@@ -8,7 +9,6 @@ import shutil
 import sys
 import tempfile
 from collections import Counter
-from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -32,18 +32,11 @@ TARGET = {
 }
 
 
-def run(case_id):
-    with store.connect() as conn:
-        agent.run_case(conn, case_id)
-
-
 store.ensure_db()
 with store.connect() as conn:
     truth = dict(conn.execute("SELECT merchant_id, scenario FROM ground_truth").fetchall())
-    ids = [r[0] for r in conn.execute("SELECT id FROM cases WHERE cohort = 'ai'")]
 
-with ThreadPoolExecutor(int(os.environ.get("WAPSI_WORKERS", "4"))) as pool:
-    list(pool.map(run, ids))
+agent.run_all()
 
 with store.connect() as conn:
     actual = {}
@@ -70,5 +63,14 @@ for guard in guards[:12]:
     print("  ", guard["case_id"], guard["title"], str(guard["detail"])[:110])
 for message in messages:
     print("whatsapp", message["case_id"], message["detail"]["text"][:200])
-print("PASS" if passed and not wrong_cause else "FAIL")
+# The demo needs the agent to hit the waiver limit by itself, then go to the manager.
+blocked_waiver = any(guard["title"] == "Blocked: offer_waiver" for guard in guards)
+print("over-limit waiver blocked:", blocked_waiver)
+success = passed and not wrong_cause and blocked_waiver
+print("PASS" if success else "FAIL")
+if success and "--save" in sys.argv:
+    with store.connect() as conn:
+        store.save_snapshot(conn)
+    print("saved", store.SNAPSHOT_PATH)
 shutil.rmtree(tmp)
+sys.exit(0 if success else 1)

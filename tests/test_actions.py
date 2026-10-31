@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 
 from wapsi import guardrails, store
-from wapsi.actions import LIVE_CALL_CASE, CaseActions
+from wapsi.actions import LIVE_CALL_CASE, CaseActions, apply_decision
 from wapsi.guardrails import Blocked
 
 
@@ -77,6 +77,29 @@ class ActionsTest(unittest.TestCase):
         refunds = self.conn.execute("SELECT COUNT(*) FROM billing WHERE merchant_id = ? AND kind = 'reversal'",
                                     (merchant_id,)).fetchone()[0]
         self.assertEqual(refunds, 0)
+
+    def test_splitting_a_refund_cannot_beat_the_limit(self):
+        actions = self.actions(self.repeat_billing())
+        actions.offer_waiver(135, "First month")
+        with self.assertRaises(Blocked):
+            actions.offer_waiver(135, "Second month")
+
+    def test_manager_approval_refunds_the_full_amount(self):
+        merchant_id = self.repeat_billing()
+        self.actions(merchant_id).request_approval("waiver", 405, "Three months of duplicates", "")
+        approval = self.conn.execute("SELECT * FROM approvals WHERE case_id = ?", (f"C-{merchant_id}",)).fetchone()
+        self.assertEqual(apply_decision(self.conn, approval, "approve"), "handled_remote")
+        refunded = self.conn.execute("SELECT SUM(amount) FROM billing WHERE merchant_id = ? AND kind = 'reversal'",
+                                     (merchant_id,)).fetchone()[0]
+        self.assertEqual(refunded, -405)
+
+    def test_rejected_waiver_refunds_nothing_and_books_a_rep_with_a_brief(self):
+        merchant_id = self.repeat_billing()
+        self.actions(merchant_id).request_approval("waiver", 405, "Three months of duplicates", "")
+        approval = self.conn.execute("SELECT * FROM approvals WHERE case_id = ?", (f"C-{merchant_id}",)).fetchone()
+        self.assertEqual(apply_decision(self.conn, approval, "reject"), "rep_visit")
+        case = self.conn.execute("SELECT rep_brief FROM cases WHERE id = ?", (f"C-{merchant_id}",)).fetchone()
+        self.assertTrue(case["rep_brief"])
 
     def test_waiver_cannot_exceed_what_billing_shows(self):
         with self.assertRaises(Blocked):

@@ -95,8 +95,8 @@ in **Shared**, tell the other person first.
 
 ### A1: the brain
 
-- `wapsi/agent.py` and `wapsi/tools.py` (to create): replace `wapsi/stub_agent.py`
-- Guardrails: waiver limits, contact caps, night calls, escalate when unsure
+- `wapsi/agent.py`, `wapsi/tools.py`, `wapsi/actions.py`, `wapsi/guardrails.py`
+- `scripts/evaluate_agent.py` and `wapsi/prerun.json`
 - `wapsi/sim.py`, `wapsi/detector.py`, `wapsi/results.py`
 - Fixes to the deck and the final presentation
 
@@ -127,7 +127,8 @@ with a proxy from `/api` to port 8000.
 | GET | `/api/approvals` | Pending approvals |
 | POST | `/api/approvals/{id}/decide` | Body `{"decision": "approve" \| "reject"}` |
 | GET | `/api/results` | AI vs control, with `simulated: true` and the assumptions |
-| POST | `/api/reset` | Back to the 8:00 AM state. Use between demo takes |
+| POST | `/api/reset` | Back to the demo's opening board, restored from the saved real agent run. Use between takes |
+| POST | `/api/reset?fresh=true` | Every case back to `new`, for a real agent run with `/api/run` |
 
 Live updates are polling, not websockets: it is simpler and cannot die on stage.
 
@@ -139,11 +140,18 @@ Live updates are polling, not websockets: it is simpler and cannot die on stage.
 - event `kind`: `thought`, `tool_call`, `tool_result`, `guardrail`, `call`, `whatsapp`,
   `approval`, `status`
 
-`agent_mode` in `/api/board` is `stub` until A1's agent lands. Show it as a visible badge,
-so nobody demos canned reasoning by accident. A1 changes it to `live`.
+**Event details the UI should show**
+
+- `Diagnosis: ...` status events: `detail.evidence` is a list of facts, the agent's best output
+- `whatsapp` events: `detail.text` in the merchant's language, `detail.language`
+- `guardrail` events: `detail.text` says what was blocked and why
+
+`agent_mode` in `/api/board` is now `live`. `wapsi/prerun.json` is a real agent run that passed
+`scripts/evaluate_agent.py --save`, which refuses to save a failing run. Rerun that script after
+any change to the agent, its tools or the planted data, and bump `SIM_VERSION` if the data changes.
 
 A1 and A2 never call each other's code directly. Both only read and write through
-`wapsi/store.py`, so the agent can be swapped without touching the UI.
+`wapsi/store.py`.
 
 ## Rules that protect the score
 
@@ -197,7 +205,7 @@ State is `todo`, `doing` or `done`. Keep each task on its own line.
 | T1 | Simulator, detector, API contract with stub agent | A1 | done |
 | T2 | Real agent loop with read-only tools, working on one case | A1 | done |
 | T3 | Action tools and guardrails, including the waiver block | A1 | done |
-| T4 | Real agent gets all 37 causes right, stub deleted, `agent_mode` set to `live` | A1 | doing |
+| T4 | Real agent gets all 37 causes right, stub deleted, `agent_mode` set to `live` | A1 | done |
 | T5 | Deck fixes and final presentation | A1 | todo |
 | T6 | Vite + React app showing the ops board from `/api/board` | A2 | done |
 | T7 | Case detail with live agent trace | A2 | done |

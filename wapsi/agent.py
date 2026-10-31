@@ -5,6 +5,7 @@ Try one case with `uv run python -m wapsi.agent C-M0044`.
 import json
 import os
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import anthropic
@@ -14,10 +15,12 @@ from wapsi import guardrails, store
 from wapsi.actions import CaseActions
 from wapsi.tools import ACTION_TOOLS, READ_TOOLS, CaseTools
 
+AGENT_MODE = "live"
 MAX_TURNS = 16
+WORKERS = 4
 DEFAULT_MODEL = "claude-sonnet-5-5"
 
-SYSTEM = f"""You are Wapsi, a Merchant Retention Associate for Paytm's field sales team in India. \
+SYSTEM = """You are Wapsi, a Merchant Retention Associate for Paytm's field sales team in India. \
 You find out why a shop using a Paytm device has gone quiet, fix what you can remotely, and send a \
 person only when one is truly needed.
 
@@ -44,9 +47,9 @@ remote options have failed or a relationship is needed:
   offline, order a replacement and book a visit.
 - money_problem: create a ticket with the evidence, then send a WhatsApp telling the merchant the \
   team is on it and that any changes to bank details happen only in their Paytm app.
-- billing_anger: refund the duplicate charges with offer_waiver and confirm by WhatsApp. If the \
-  total is over your Rs {guardrails.WAIVER_LIMIT} limit, use request_approval instead, and do not \
-  split it into smaller refunds.
+- billing_anger: refund the full duplicate total in one offer_waiver and confirm by WhatsApp. If \
+  the refund is blocked, ask the manager with request_approval, then tell the merchant by WhatsApp \
+  that it is being reviewed.
 - competitor_switch: request_approval for a counter-offer of Rs 50 monthly rent with a rep brief. \
   If the shop does not qualify, book a visit with a brief.
 - closed_seasonal: do not contact the merchant. Close the case as no_action.
@@ -107,15 +110,25 @@ def create_message(client, messages):
     )
 
 
+def claim_case(conn, case_id):
+    """Take a new case in one write, so a double click cannot run it twice."""
+    claimed = conn.execute(
+        "UPDATE cases SET status = 'working' WHERE id = ? AND status = 'new'", (case_id,)
+    ).rowcount
+    conn.commit()
+    return claimed == 1
+
+
 def run_case(conn, case_id, client=None):
     """Work one case until the agent closes it, or a person has to take over."""
     client = client or anthropic.Anthropic()
     case = conn.execute("SELECT * FROM cases WHERE id = ?", (case_id,)).fetchone()
     if case["cohort"] != "ai":
         raise ValueError(f"{case_id} is in the control group, so the agent must leave it alone")
+    if not claim_case(conn, case_id):
+        return
     tools = CaseTools(conn, case["merchant_id"])
     actions = CaseActions(conn, case_id, case["merchant_id"])
-    store.update_case(conn, case_id, status="working")
     messages = [{"role": "user", "content": (
         f"Case {case_id}: merchant {case['merchant_id']} was flagged this morning. Recent payment volume "
         f"is {case['volume_ratio']:.0%} of normal, and the device has been offline on "
@@ -146,6 +159,25 @@ def run_case(conn, case_id, client=None):
         messages.append({"role": "user", "content": results})
 
     hand_to_human(conn, case_id, "The agent could not finish this case, so a person should review it.")
+
+
+def run_one(case_id, client=None):
+    """Run a case from the background. A failure hands it to a person, never leaves it stuck."""
+    with store.connect() as conn:
+        try:
+            run_case(conn, case_id, client)
+        except anthropic.APIError as failure:
+            store.add_event(conn, case_id, "status", "Agent error", {"text": str(failure)})
+            hand_to_human(conn, case_id, "The agent hit an error, so a person should review this case.")
+
+
+def run_all(client=None):
+    with store.connect() as conn:
+        pending = [row["id"] for row in conn.execute(
+            "SELECT id FROM cases WHERE status = 'new' AND cohort = 'ai' ORDER BY id"
+        )]
+    with ThreadPoolExecutor(WORKERS) as pool:
+        list(pool.map(lambda case_id: run_one(case_id, client), pending))
 
 
 if __name__ == "__main__":

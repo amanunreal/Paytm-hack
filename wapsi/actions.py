@@ -12,6 +12,25 @@ from wapsi.guardrails import Blocked
 LIVE_CALL_CASE = "C-M0418"
 
 
+def apply_decision(conn, approval, decision):
+    """Carry out a manager's decision and return the case's final bucket."""
+    approved = decision == "approve"
+    case_id = approval["case_id"]
+    bucket = approval["next_bucket"] if approved else "rep_visit"
+    if approved and approval["kind"] == "waiver":
+        merchant_id = conn.execute("SELECT merchant_id FROM cases WHERE id = ?", (case_id,)).fetchone()[0]
+        conn.execute("INSERT INTO billing VALUES (?, ?, 'reversal', ?, ?)",
+                     (merchant_id, sim.TODAY.isoformat(), -approval["amount"], "Approved by the manager"))
+    conn.execute("UPDATE approvals SET status = ? WHERE id = ?", (f"{decision}d", approval["id"]))
+    store.update_case(conn, case_id, status="done", bucket=bucket)
+    if bucket == "rep_visit":
+        conn.execute("UPDATE cases SET rep_brief = COALESCE(rep_brief, ?) WHERE id = ?",
+                     (approval["reason"], case_id))
+    store.add_event(conn, case_id, "approval", f"Manager: {decision}",
+                    {"kind": approval["kind"], "amount": approval["amount"]})
+    return bucket
+
+
 class CaseActions:
     """Actions for one case. Tracks what has happened so close_case can check the outcome."""
 
@@ -93,11 +112,17 @@ class CaseActions:
             (self.merchant_id,),
         ).fetchone()[0]
 
+    def refunded_total(self):
+        return -self.conn.execute(
+            "SELECT COALESCE(SUM(amount), 0) FROM billing WHERE merchant_id = ? AND kind = 'reversal'",
+            (self.merchant_id,),
+        ).fetchone()[0]
+
     def offer_waiver(self, amount, reason):
         self.require_diagnosis()
         if amount > self.disputed_total():
             raise Blocked(f"Billing only shows Rs {self.disputed_total()} of duplicate charges to refund.")
-        guardrails.check_waiver(amount)
+        guardrails.check_waiver(amount, self.refunded_total())
         self.conn.execute(
             "INSERT INTO billing VALUES (?, ?, 'reversal', ?, ?)",
             (self.merchant_id, self.today.isoformat(), -amount, reason),

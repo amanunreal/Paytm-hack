@@ -33,10 +33,11 @@ def check_contact(conn, merchant_id):
         raise Blocked(f"This merchant already had {used} contacts this week, which is the limit.")
 
 
-def check_waiver(amount):
-    if amount > WAIVER_LIMIT:
+def check_waiver(amount, already_refunded=0):
+    """The limit covers the running total, so splitting a refund cannot get around it."""
+    if amount + already_refunded > WAIVER_LIMIT:
         raise Blocked(
-            f"Rs {amount} is over your Rs {WAIVER_LIMIT} waiver limit. "
+            f"Rs {amount + already_refunded} is over your Rs {WAIVER_LIMIT} waiver limit. "
             "Use request_approval so the manager can decide."
         )
 

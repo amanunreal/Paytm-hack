@@ -7,6 +7,16 @@ from pathlib import Path
 
 from wapsi import detector, sim
 
+SNAPSHOT_PATH = Path(__file__).resolve().parent / "prerun.json"
+SNAPSHOT_TABLES = {
+    "cases": "1 = 1",
+    "events": "1 = 1",
+    "approvals": "1 = 1",
+    "contacts": "1 = 1",
+    "tickets": "category = 'wapsi'",  # Only what the agent wrote, never the planted rows.
+    "billing": "kind = 'reversal'",
+}
+
 SCHEMA = """
 DROP TABLE IF EXISTS cases;
 DROP TABLE IF EXISTS events;
@@ -49,7 +59,7 @@ def is_current(path):
     return version == sim.SIM_VERSION
 
 
-def ensure_db(keep_cases=False):
+def ensure_db(keep_cases=False, prerun=False):
     """Build the merchant data if needed, then open the 8:00 AM state."""
     path = db_path()
     current = is_current(path)
@@ -58,12 +68,20 @@ def ensure_db(keep_cases=False):
     if keep_cases and current:
         return  # A demo may be running, so leave its state alone.
     with connect() as conn:
-        reset(conn)
+        reset(conn, prerun=prerun)
 
 
-def reset(conn):
-    """Return to the 8:00 AM state without touching the merchant data."""
+def reset(conn, prerun=False):
+    """Return to the 8:00 AM state, undoing everything the agent wrote.
+
+    With prerun, the saved agent run comes back, so the demo opens on a finished board.
+    """
     conn.executescript(SCHEMA)
+    conn.execute(f"DELETE FROM tickets WHERE {SNAPSHOT_TABLES['tickets']}")
+    conn.execute(f"DELETE FROM billing WHERE {SNAPSHOT_TABLES['billing']}")
+    conn.commit()
+    if prerun and load_snapshot(conn):
+        return
     for item in detector.detect(conn, sim.TODAY):
         status = "new" if item["cohort"] == "ai" else "control"
         conn.execute(
@@ -72,6 +90,30 @@ def reset(conn):
              item["volume_ratio"], item["offline_days"]),
         )
     conn.commit()
+
+
+def save_snapshot(conn, path=SNAPSHOT_PATH):
+    tables = {
+        table: rows(conn.execute(f"SELECT * FROM {table} WHERE {where}"))
+        for table, where in SNAPSHOT_TABLES.items()
+    }
+    path.write_text(json.dumps({"sim_version": sim.SIM_VERSION, "tables": tables}, ensure_ascii=False, indent=0))
+
+
+def load_snapshot(conn, path=SNAPSHOT_PATH):
+    """Restore a saved run. False if there is none, or it was made from other merchant data."""
+    if not path.exists():
+        return False
+    snapshot = json.loads(path.read_text())
+    if snapshot["sim_version"] != sim.SIM_VERSION:
+        return False
+    for table, table_rows in snapshot["tables"].items():
+        for row in table_rows:
+            names = ", ".join(row)
+            marks = ", ".join("?" * len(row))
+            conn.execute(f"INSERT INTO {table} ({names}) VALUES ({marks})", tuple(row.values()))
+    conn.commit()
+    return True
 
 
 def add_event(conn, case_id, kind, title, detail=None):
